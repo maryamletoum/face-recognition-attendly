@@ -130,7 +130,7 @@ const Courses: React.FC = () => {
                 
                 <div className="flex justify-between items-center mt-auto pt-4 border-t border-border/40">
                   <Link 
-                    to={`/dashboard`} 
+                    to={`/courses/${course.id}`} 
                     className="text-sm text-primary hover:underline"
                   >
                     View Details

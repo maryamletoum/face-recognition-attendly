@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -11,14 +10,14 @@ import {
   Users,
   User,
   Settings,
-  Bell,
-  LogOut,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import StudentCard from '@/components/StudentCard';
+import NotificationBell from '@/components/NotificationBell';
 import { cn } from '@/lib/utils';
 
 const getRandomAttendancePercentage = () => {
@@ -225,10 +224,7 @@ const Dashboard: React.FC = () => {
             </div>
             
             <div className="flex items-center gap-3">
-              <button className="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-secondary transition-colors">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary"></span>
-              </button>
+              <NotificationBell />
               
               <div className="relative">
                 <button className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">

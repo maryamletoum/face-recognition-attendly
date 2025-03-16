@@ -1,19 +1,32 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { Bell, Cloud, Lock, Save, Server, User } from "lucide-react";
+import NotificationBell from '@/components/NotificationBell';
+import { Cloud, Lock, Save, Server, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Settings: React.FC = () => {
   const [activeTab, setActiveTab] = useState('account');
+  const { toast } = useToast();
+
+  const handleSaveChanges = () => {
+    toast({
+      title: "Settings saved",
+      description: "Your changes have been saved successfully",
+      duration: 3000,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">Settings</h1>
-          <p className="text-foreground/70">Manage your account and application preferences</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-2xl font-bold mb-2">Settings</h1>
+            <p className="text-foreground/70">Manage your account and application preferences</p>
+          </div>
+          <NotificationBell />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -103,7 +116,7 @@ const Settings: React.FC = () => {
                     </div>
                     
                     <div className="mt-8 pt-6 border-t border-border flex justify-end">
-                      <Button>
+                      <Button onClick={handleSaveChanges}>
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>
@@ -159,7 +172,7 @@ const Settings: React.FC = () => {
                     </div>
                     
                     <div className="mt-8 pt-6 border-t border-border flex justify-end">
-                      <Button>
+                      <Button onClick={handleSaveChanges}>
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>
@@ -191,7 +204,7 @@ const Settings: React.FC = () => {
                     </div>
                     
                     <div className="mt-8 pt-6 border-t border-border flex justify-end">
-                      <Button>
+                      <Button onClick={handleSaveChanges}>
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>
@@ -251,7 +264,7 @@ const Settings: React.FC = () => {
                     </div>
                     
                     <div className="mt-8 pt-6 border-t border-border flex justify-end">
-                      <Button>
+                      <Button onClick={handleSaveChanges}>
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>
@@ -328,7 +341,7 @@ const Settings: React.FC = () => {
                     </div>
                     
                     <div className="mt-8 pt-6 border-t border-border flex justify-end">
-                      <Button>
+                      <Button onClick={handleSaveChanges}>
                         <Save className="w-4 h-4 mr-2" />
                         Save Changes
                       </Button>

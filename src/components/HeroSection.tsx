@@ -34,11 +34,6 @@ const HeroSection: React.FC = () => {
                     Get Started
                   </Button>
                 </Link>
-                <Link to="/#features">
-                  <Button variant="outline" size="lg" className="rounded-full h-12 px-6">
-                    Learn More
-                  </Button>
-                </Link>
               </div>
             </FadeIn>
             <FadeIn direction="up" delay={400}>
@@ -64,20 +59,22 @@ const HeroSection: React.FC = () => {
               <div className="relative z-10">
                 <GlassCard className="overflow-hidden w-full max-w-xl mx-auto aspect-[4/3] rounded-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent opacity-50 rounded-2xl"></div>
-                  <div className="p-4 h-full relative">
-                    <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/60 px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
-                      Live Demo
-                    </div>
-                    <div className="h-full flex flex-col justify-center items-center">
-                      <div className="w-20 h-20 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                        </svg>
-                      </div>
-                      <div className="text-center">
-                        <h3 className="text-xl font-semibold mb-1">Face Recognition Demo</h3>
-                        <p className="text-sm text-foreground/70 mb-4">Experience how it works in real-time</p>
-                        <Button className="rounded-full">Try Demo</Button>
+                  <div className="p-8 h-full relative">
+                    <div className="h-full flex flex-col justify-center items-center text-center">
+                      <h3 className="text-2xl font-semibold mb-4">Modern Attendance Solution</h3>
+                      <p className="text-foreground/70 mb-6 max-w-md">
+                        Our smart attendance system helps educational institutions 
+                        streamline attendance tracking with advanced technology.
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+                        <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg">
+                          <div className="text-3xl font-bold text-primary mb-1">99%</div>
+                          <div className="text-sm text-foreground/70">Accuracy</div>
+                        </div>
+                        <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg">
+                          <div className="text-3xl font-bold text-primary mb-1">5x</div>
+                          <div className="text-sm text-foreground/70">Faster</div>
+                        </div>
                       </div>
                     </div>
                   </div>

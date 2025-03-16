@@ -21,30 +21,25 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-medium mb-4">Product</h3>
             <ul className="space-y-2">
-              <li><Link to="/#features" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Features</Link></li>
-              <li><Link to="/pricing" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Pricing</Link></li>
-              <li><Link to="/security" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Security</Link></li>
-              <li><Link to="/enterprise" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Enterprise</Link></li>
+              <li><Link to="/#about" className="text-foreground/70 hover:text-foreground text-sm transition-colors">About</Link></li>
+              <li><Link to="/login" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Get Started</Link></li>
+              <li><Link to="/dashboard" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Dashboard</Link></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-medium mb-4">Resources</h3>
             <ul className="space-y-2">
-              <li><Link to="/documentation" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Documentation</Link></li>
-              <li><Link to="/guides" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Guides</Link></li>
-              <li><Link to="/api" className="text-foreground/70 hover:text-foreground text-sm transition-colors">API Reference</Link></li>
-              <li><Link to="/support" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Support</Link></li>
+              <li><a href="mailto:support@attendly.com" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Support</a></li>
+              <li><a href="tel:+1234567890" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Contact</a></li>
             </ul>
           </div>
           
           <div>
             <h3 className="font-medium mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link to="/about" className="text-foreground/70 hover:text-foreground text-sm transition-colors">About Us</Link></li>
-              <li><Link to="/blog" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Blog</Link></li>
-              <li><Link to="/careers" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Careers</Link></li>
-              <li><Link to="/contact" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Contact</Link></li>
+              <li><Link to="/#about" className="text-foreground/70 hover:text-foreground text-sm transition-colors">About Us</Link></li>
+              <li><a href="mailto:info@attendly.com" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Contact</a></li>
             </ul>
           </div>
         </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import AttendanceTable from '@/components/AttendanceTable';
 import StudentCard from '@/components/StudentCard';
-import FaceRecognition from '@/components/FaceRecognition';
 import { cn } from '@/lib/utils';
 
 const getRandomAttendancePercentage = () => {
@@ -305,46 +303,36 @@ const Dashboard: React.FC = () => {
           </div>
           
           {/* Main content grid */}
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Attendance table - wider column */}
-            <div className="lg:col-span-2 space-y-6">
-              <FadeIn>
-                <GlassCard>
-                  <AttendanceTable 
-                    date={currentDate}
-                    courseId="course123"
-                  />
-                </GlassCard>
-              </FadeIn>
-            </div>
+          <div className="grid gap-6">
+            {/* Attendance table - now full width */}
+            <FadeIn>
+              <GlassCard>
+                <AttendanceTable 
+                  date={currentDate}
+                  courseId="course123"
+                />
+              </GlassCard>
+            </FadeIn>
             
-            {/* Right sidebar */}
-            <div className="space-y-6">
-              {/* Face recognition */}
-              <FadeIn delay={100}>
-                <FaceRecognition />
-              </FadeIn>
-              
-              {/* Recent students */}
-              <FadeIn delay={200}>
-                <GlassCard>
-                  <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
-                  <div className="space-y-3">
-                    {recentStudents.map((student, index) => (
-                      <StudentCard 
-                        key={student.id} 
-                        student={student}
-                      />
-                    ))}
-                  </div>
-                  <div className="mt-4 pt-3 border-t border-border/40">
-                    <Button variant="outline" className="w-full">
-                      View All Students
-                    </Button>
-                  </div>
-                </GlassCard>
-              </FadeIn>
-            </div>
+            {/* Recent students - now shown below attendance table */}
+            <FadeIn delay={100}>
+              <GlassCard>
+                <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {recentStudents.map((student) => (
+                    <StudentCard 
+                      key={student.id} 
+                      student={student}
+                    />
+                  ))}
+                </div>
+                <div className="mt-6 pt-3 border-t border-border/40">
+                  <Button variant="outline" className="w-full">
+                    View All Students
+                  </Button>
+                </div>
+              </GlassCard>
+            </FadeIn>
           </div>
         </main>
       </div>

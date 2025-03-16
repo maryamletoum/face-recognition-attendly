@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
 } from "lucide-react";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import AttendanceTable from '@/components/AttendanceTable';
 import StudentCard from '@/components/StudentCard';
 import { cn } from '@/lib/utils';
 
@@ -304,18 +304,8 @@ const Dashboard: React.FC = () => {
           
           {/* Main content grid */}
           <div className="grid gap-6">
-            {/* Attendance table - now full width */}
+            {/* Recent students section */}
             <FadeIn>
-              <GlassCard>
-                <AttendanceTable 
-                  date={currentDate}
-                  courseId="course123"
-                />
-              </GlassCard>
-            </FadeIn>
-            
-            {/* Recent students - now shown below attendance table */}
-            <FadeIn delay={100}>
               <GlassCard>
                 <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">

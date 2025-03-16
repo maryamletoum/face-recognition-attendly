@@ -100,18 +100,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     }
   };
 
-  const handleStatusChange = (studentId: string, newStatus: 'present' | 'absent' | 'late') => {
-    setStudents(students.map(student => 
-      student.id === studentId 
-        ? { 
-            ...student, 
-            status: newStatus,
-            checkInTime: newStatus === 'absent' ? "" : student.checkInTime || "09:00 AM"
-          } 
-        : student
-    ));
-  };
-
   const handleExport = () => {
     alert("Exporting attendance data...");
   };
@@ -170,7 +158,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <TableHead>Check In</TableHead>
               <TableHead>Check Out</TableHead>
               <TableHead>Notes</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -187,39 +174,11 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   <TableCell>{student.checkInTime || "-"}</TableCell>
                   <TableCell>{student.checkOutTime || "-"}</TableCell>
                   <TableCell>{student.notes || "-"}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button 
-                        size="sm" 
-                        variant={student.status === "present" ? "default" : "outline"}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => handleStatusChange(student.id, "present")}
-                      >
-                        Present
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant={student.status === "late" ? "default" : "outline"}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => handleStatusChange(student.id, "late")}
-                      >
-                        Late
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant={student.status === "absent" ? "default" : "outline"}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => handleStatusChange(student.id, "absent")}
-                      >
-                        Absent
-                      </Button>
-                    </div>
-                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4 text-foreground/70">
+                <TableCell colSpan={6} className="text-center py-4 text-foreground/70">
                   No students found
                 </TableCell>
               </TableRow>

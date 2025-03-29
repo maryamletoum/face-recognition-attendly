@@ -39,7 +39,7 @@ const features = [
 
 const FeaturesSection: React.FC = () => {
   return (
-    <section id="features" className="py-20 bg-secondary/50">
+    <section id="about" className="py-20 bg-secondary/50">
       <div className="container px-4 mx-auto">
         <div className="text-center mb-16">
           <FadeIn>

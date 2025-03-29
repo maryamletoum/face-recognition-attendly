@@ -23,15 +23,42 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Handle hash navigation
+  useEffect(() => {
+    // Check if there's a hash in the URL
+    if (location.hash) {
+      const id = location.hash.substring(1); // Remove the # character
+      const element = document.getElementById(id);
+      
+      if (element) {
+        // Add a small delay to ensure the page has fully loaded
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    }
+  }, [location.hash]);
+
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location]);
+  }, [location.pathname]);
 
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'About', path: '/#about' },
   ];
+
+  const handleNavClick = (path: string) => {
+    // If it's a hash link on the current page
+    if (path.includes('#') && location.pathname === '/') {
+      const id = path.split('#')[1];
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
 
   return (
     <header
@@ -53,9 +80,10 @@ const Navbar: React.FC = () => {
             <Link
               key={link.path}
               to={link.path}
+              onClick={() => handleNavClick(link.path)}
               className={cn(
                 "text-foreground/80 hover:text-foreground transition-colors",
-                location.pathname === link.path && "font-medium text-foreground"
+                location.pathname === link.path.split('#')[0] && "font-medium text-foreground"
               )}
             >
               {link.name}
@@ -94,9 +122,10 @@ const Navbar: React.FC = () => {
               <Link
                 key={link.path}
                 to={link.path}
+                onClick={() => handleNavClick(link.path)}
                 className={cn(
                   "text-foreground/80 py-2 hover:text-foreground transition-colors",
-                  location.pathname === link.path && "font-medium text-foreground"
+                  location.pathname === link.path.split('#')[0] && "font-medium text-foreground"
                 )}
               >
                 {link.name}

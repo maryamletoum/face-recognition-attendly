@@ -13,7 +13,7 @@ const BackButton: React.FC<BackButtonProps> = ({ className }) => {
   const location = useLocation();
   
   // Don't show back button on main routes
-  if (location.pathname === '/' || location.pathname === '/dashboard') {
+  if (location.pathname === '/' || location.pathname === '/dashboard' || location.hash) {
     return null;
   }
   

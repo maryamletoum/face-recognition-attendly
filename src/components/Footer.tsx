@@ -1,8 +1,21 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const Footer: React.FC = () => {
+  const location = useLocation();
+
+  const handleHashLink = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    // Only handle hash navigation if we're already on the home page
+    if (location.pathname === '/') {
+      e.preventDefault();
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <footer className="bg-background border-t border-border/40">
       <div className="container px-4 py-12 mx-auto">
@@ -21,7 +34,15 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-medium mb-4">Product</h3>
             <ul className="space-y-2">
-              <li><Link to="/#about" className="text-foreground/70 hover:text-foreground text-sm transition-colors">About</Link></li>
+              <li>
+                <Link 
+                  to="/#about" 
+                  className="text-foreground/70 hover:text-foreground text-sm transition-colors"
+                  onClick={(e) => handleHashLink(e, 'about')}
+                >
+                  About
+                </Link>
+              </li>
               <li><Link to="/login" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Get Started</Link></li>
               <li><Link to="/dashboard" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Dashboard</Link></li>
             </ul>
@@ -38,7 +59,15 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="font-medium mb-4">Company</h3>
             <ul className="space-y-2">
-              <li><Link to="/#about" className="text-foreground/70 hover:text-foreground text-sm transition-colors">About Us</Link></li>
+              <li>
+                <Link 
+                  to="/#about" 
+                  className="text-foreground/70 hover:text-foreground text-sm transition-colors"
+                  onClick={(e) => handleHashLink(e, 'about')}
+                >
+                  About Us
+                </Link>
+              </li>
               <li><a href="mailto:info@attendly.com" className="text-foreground/70 hover:text-foreground text-sm transition-colors">Contact</a></li>
             </ul>
           </div>

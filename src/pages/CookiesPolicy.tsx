@@ -3,6 +3,7 @@ import React from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Separator } from "@/components/ui/separator";
+import BackButton from '@/components/BackButton';
 
 const CookiesPolicy: React.FC = () => {
   return (
@@ -11,6 +12,9 @@ const CookiesPolicy: React.FC = () => {
       <main className="flex-grow pt-24 pb-16">
         <div className="container px-4 mx-auto">
           <div className="max-w-4xl mx-auto">
+            <div className="mb-4">
+              <BackButton />
+            </div>
             <h1 className="text-3xl font-bold mb-6">Cookies Policy</h1>
             
             <div className="prose prose-gray dark:prose-invert max-w-none">

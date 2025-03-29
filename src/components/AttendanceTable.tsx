@@ -110,6 +110,16 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     alert("Refreshing attendance data from face recognition system...");
   };
 
+  const updateStudentStatus = (studentId: string, status: 'present' | 'absent' | 'late') => {
+    setStudents(prevStudents => 
+      prevStudents.map(student => 
+        student.id === studentId 
+          ? { ...student, status } 
+          : student
+      )
+    );
+  };
+
   return (
     <div className={className}>
       <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-end">
@@ -148,6 +158,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <TableHead>Check In</TableHead>
               <TableHead>Check Out</TableHead>
               <TableHead>Notes</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -171,11 +182,39 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                   <TableCell>{student.checkInTime || "-"}</TableCell>
                   <TableCell>{student.checkOutTime || "-"}</TableCell>
                   <TableCell>{student.notes || "-"}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant={student.status === 'present' ? 'default' : 'outline'}
+                        className="h-7 px-2 text-xs"
+                        onClick={() => updateStudentStatus(student.id, 'present')}
+                      >
+                        Present
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={student.status === 'absent' ? 'default' : 'outline'}
+                        className="h-7 px-2 text-xs"
+                        onClick={() => updateStudentStatus(student.id, 'absent')}
+                      >
+                        Absent
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={student.status === 'late' ? 'default' : 'outline'}
+                        className="h-7 px-2 text-xs"
+                        onClick={() => updateStudentStatus(student.id, 'late')}
+                      >
+                        Late
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-4 text-foreground/70">
+                <TableCell colSpan={7} className="text-center py-4 text-foreground/70">
                   No students found
                 </TableCell>
               </TableRow>

@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, BookOpen, Users, ArrowRight } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, BookOpen, Users, ArrowRight, Download } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import AttendanceTable from '@/components/AttendanceTable';
+import BackButton from '@/components/BackButton';
 
 // Sample data - in a real app, this would come from an API
 const classes = [
@@ -104,6 +105,7 @@ const Attendance: React.FC = () => {
                 </GlassCard>
               </div>
             )}
+            <BackButton className="shadow-sm hover:shadow-md transition-shadow" />
           </div>
         </div>
 
@@ -274,6 +276,7 @@ const Attendance: React.FC = () => {
                 variant="outline"
                 className="shadow-sm hover:shadow-md transition-shadow"
               >
+                <Download className="w-4 h-4 mr-2" />
                 Export CSV
               </Button>
             </div>

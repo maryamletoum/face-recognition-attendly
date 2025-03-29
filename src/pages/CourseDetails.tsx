@@ -1,12 +1,12 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
+import BackButton from '@/components/BackButton';
 
 // Mock course data - in a real application, this would come from an API
 const courses = [
@@ -101,10 +101,9 @@ const CourseDetails: React.FC = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
-          <Link to="/courses" className="flex items-center text-primary hover:underline mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Courses
-          </Link>
+          <div className="mb-6">
+            <BackButton />
+          </div>
           <GlassCard>
             <div className="text-center py-12">
               <h2 className="text-2xl font-bold mb-2">Course Not Found</h2>
@@ -122,10 +121,9 @@ const CourseDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/courses" className="flex items-center text-primary hover:underline mb-6">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Courses
-        </Link>
+        <div className="mb-6">
+          <BackButton />
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">

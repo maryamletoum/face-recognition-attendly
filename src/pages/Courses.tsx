@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import { BookOpen, ChevronDown, Search } from "lucide-react";
 import { Link } from 'react-router-dom';
+import BackButton from '@/components/BackButton';
 
 const courses = [
   {
@@ -62,6 +62,10 @@ const Courses: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center mb-4">
+          <BackButton className="mr-2" />
+        </div>
+        
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold mb-2">Courses</h1>

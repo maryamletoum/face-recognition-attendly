@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Download, RefreshCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Student = {
   id: string;
@@ -34,6 +35,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   courseId,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  // Mock data - in a real application, this would be fetched based on courseId and date
   const [students, setStudents] = useState<Student[]>([
     {
       id: "1",
@@ -111,19 +113,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   return (
     <div className={className}>
       <div className="flex flex-col md:flex-row gap-4 mb-6 justify-between items-end">
-        <div className="w-full md:w-auto flex-1 space-y-1">
-          <h2 className="text-xl font-semibold">Attendance Record</h2>
-          <p className="text-sm text-foreground/70">
-            {date.toLocaleDateString("en-US", { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
           <div className="relative w-full md:w-[250px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/50" />
             <Input
@@ -153,7 +143,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           <TableHeader>
             <TableRow>
               <TableHead className="w-[200px]">Student Name</TableHead>
-              <TableHead>ID</TableHead>
+              <TableHead>Student ID</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Check In</TableHead>
               <TableHead>Check Out</TableHead>
@@ -164,7 +154,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             {filteredStudents.length > 0 ? (
               filteredStudents.map((student) => (
                 <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                        {student.name.charAt(0)}
+                      </div>
+                      <span>{student.name}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>{student.studentId}</TableCell>
                   <TableCell>
                     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusClass(student.status)}`}>

@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import NotificationBell from '@/components/NotificationBell';
-import { Cloud, Lock, Save, Server, User } from "lucide-react";
+import { Cloud, Lock, Save, Server, User, Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Settings: React.FC = () => {

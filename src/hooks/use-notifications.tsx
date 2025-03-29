@@ -33,6 +33,20 @@ export function useNotifications() {
       description: "Your weekly attendance report is ready to view",
       read: true,
       timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24) // 1 day ago
+    },
+    {
+      id: "4",
+      title: "System Update Completed",
+      description: "AI Recognition system has been updated to v2.5",
+      read: true,
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48) // 2 days ago
+    },
+    {
+      id: "5",
+      title: "New Course Added",
+      description: "Machine Learning 101 has been added to the curriculum",
+      read: true,
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 72) // 3 days ago
     }
   ]);
 
@@ -60,10 +74,29 @@ export function useNotifications() {
     });
   };
 
+  const addNotification = (title: string, description: string) => {
+    const newNotification: Notification = {
+      id: String(Date.now()),
+      title,
+      description,
+      read: false,
+      timestamp: new Date()
+    };
+    
+    setNotifications([newNotification, ...notifications]);
+    
+    toast({
+      title: "New notification",
+      description: title,
+      duration: 3000,
+    });
+  };
+
   return {
     notifications,
     unreadCount,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+    addNotification
   };
 }

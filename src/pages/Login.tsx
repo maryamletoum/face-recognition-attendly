@@ -83,7 +83,7 @@ const Login: React.FC = () => {
                         <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
-                        <span>Used by 1000+ institutions worldwide</span>
+                        <span>Used by 100+ institutions worldwide</span>
                       </li>
                     </ul>
                   </GlassCard>

@@ -48,7 +48,7 @@ const HeroSection: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <span>Trusted by 1000+ educational institutions</span>
+                <span>Trusted by 100+ educational institutions</span>
               </div>
             </FadeIn>
           </div>

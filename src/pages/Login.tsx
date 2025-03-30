@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import FadeIn from '@/components/animations/FadeIn';
 import GlassCard from '@/components/ui/GlassCard';
 import Navbar from '@/components/Navbar';
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState('teacher');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +27,12 @@ const Login: React.FC = () => {
     setTimeout(() => {
       setIsLoading(false);
       
-      // For demo, we'll just redirect to dashboard
-      // In a real application, you would validate credentials
+      // Store role information for authorization in the app
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('userEmail', email);
+      
       toast({
-        title: "Welcome back!",
+        title: `Welcome back, ${role === 'admin' ? 'Administrator' : 'Teacher'}!`,
         description: "You have successfully logged in.",
       });
       window.location.href = '/dashboard';
@@ -43,9 +47,14 @@ const Login: React.FC = () => {
     setTimeout(() => {
       setIsLoading(false);
       
+      // Store role information for authorization in the app
+      localStorage.setItem('userRole', role);
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userName', name);
+      
       toast({
         title: "Account created!",
-        description: "Your account has been successfully created.",
+        description: `Your ${role === 'admin' ? 'administrator' : 'teacher'} account has been successfully created.`,
       });
       window.location.href = '/dashboard';
     }, 1500);
@@ -129,6 +138,25 @@ const Login: React.FC = () => {
                         />
                       </div>
                       
+                      <div className="space-y-2">
+                        <Label>Account Type</Label>
+                        <RadioGroup 
+                          defaultValue="teacher" 
+                          value={role}
+                          onValueChange={setRole}
+                          className="flex space-x-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="teacher" id="teacher" />
+                            <Label htmlFor="teacher" className="cursor-pointer">Teacher</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="admin" id="admin" />
+                            <Label htmlFor="admin" className="cursor-pointer">Administrator</Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                      
                       <Button type="submit" className="w-full" disabled={isLoading}>
                         {isLoading ? "Signing in..." : "Sign in"}
                       </Button>
@@ -172,6 +200,25 @@ const Login: React.FC = () => {
                         <p className="text-xs text-foreground/60">
                           Password must be at least 8 characters long
                         </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>Account Type</Label>
+                        <RadioGroup 
+                          defaultValue="teacher" 
+                          value={role}
+                          onValueChange={setRole}
+                          className="flex space-x-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="teacher" id="teacher-signup" />
+                            <Label htmlFor="teacher-signup" className="cursor-pointer">Teacher</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="admin" id="admin-signup" />
+                            <Label htmlFor="admin-signup" className="cursor-pointer">Administrator</Label>
+                          </div>
+                        </RadioGroup>
                       </div>
                       
                       <Button type="submit" className="w-full" disabled={isLoading}>

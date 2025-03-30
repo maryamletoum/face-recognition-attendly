@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import { Download, Plus, Search, UserPlus } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import RoleBasedAccess from '@/components/RoleBasedAccess';
 
 const students = [
   {
@@ -74,6 +76,7 @@ const students = [
 
 const Students: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { isAdmin } = useAuth();
   
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -87,18 +90,36 @@ const Students: React.FC = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold mb-2">Students</h1>
-            <p className="text-foreground/70">View and manage student information</p>
+            <p className="text-foreground/70">
+              {isAdmin() 
+                ? "View and manage student information" 
+                : "View student information"
+              }
+            </p>
           </div>
-          <div className="mt-4 md:mt-0 flex gap-2">
-            <Button variant="outline">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Import
-            </Button>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Student
-            </Button>
-          </div>
+          
+          <RoleBasedAccess 
+            allowedRoles={['admin']}
+            fallback={
+              <div className="mt-4 md:mt-0">
+                <Button variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            }
+          >
+            <div className="mt-4 md:mt-0 flex gap-2">
+              <Button variant="outline">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Import
+              </Button>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Student
+              </Button>
+            </div>
+          </RoleBasedAccess>
         </div>
 
         <div className="mb-6">
@@ -148,7 +169,13 @@ const Students: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <Button variant="ghost" size="sm">View</Button>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm">View</Button>
+                          
+                          <RoleBasedAccess allowedRoles={['admin']}>
+                            <Button variant="ghost" size="sm">Edit</Button>
+                          </RoleBasedAccess>
+                        </div>
                       </td>
                     </tr>
                   ))}

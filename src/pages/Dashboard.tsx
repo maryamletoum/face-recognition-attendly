@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -13,12 +14,16 @@ import {
   Menu,
   X,
   LogOut,
+  UserPlus,
+  ClipboardList,
 } from "lucide-react";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import StudentCard from '@/components/StudentCard';
 import NotificationBell from '@/components/NotificationBell';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import RoleBasedAccess from '@/components/RoleBasedAccess';
 
 const getRandomAttendancePercentage = () => {
   return Math.floor(Math.random() * 30) + 70; // Random between 70-99%
@@ -63,6 +68,7 @@ const Dashboard: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("Web Development");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { userRole, logout, isAdmin } = useAuth();
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -107,6 +113,16 @@ const Dashboard: React.FC = () => {
             Students
           </Link>
           
+          <RoleBasedAccess allowedRoles={['admin']}>
+            <Link 
+              to="/teachers" 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <UserPlus className="w-5 h-5" />
+              Manage Teachers
+            </Link>
+          </RoleBasedAccess>
+          
           <Link 
             to="/settings" 
             className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
@@ -134,10 +150,13 @@ const Dashboard: React.FC = () => {
               <User className="w-5 h-5 text-primary" />
             </div>
             <div className="flex-grow min-w-0">
-              <p className="font-medium truncate">Admin User</p>
-              <p className="text-xs text-foreground/70 truncate">admin@attendly.com</p>
+              <p className="font-medium truncate">{isAdmin() ? 'Administrator' : 'Teacher'}</p>
+              <p className="text-xs text-foreground/70 truncate">{localStorage.getItem('userEmail') || 'user@attendly.com'}</p>
             </div>
-            <button className="text-foreground/70 hover:text-foreground">
+            <button 
+              className="text-foreground/70 hover:text-foreground"
+              onClick={logout}
+            >
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -190,6 +209,16 @@ const Dashboard: React.FC = () => {
                 Students
               </Link>
               
+              <RoleBasedAccess allowedRoles={['admin']}>
+                <Link 
+                  to="/teachers" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  <UserPlus className="w-5 h-5" />
+                  Manage Teachers
+                </Link>
+              </RoleBasedAccess>
+              
               <Link 
                 to="/settings" 
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
@@ -239,7 +268,9 @@ const Dashboard: React.FC = () => {
         <main className="p-4 md:p-6 pb-20">
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-grow">
-              <h2 className="text-2xl font-semibold mb-2">Welcome back, Admin</h2>
+              <h2 className="text-2xl font-semibold mb-2">
+                Welcome back, {isAdmin() ? 'Administrator' : 'Teacher'}
+              </h2>
               <p className="text-foreground/70">
                 Here's what's happening with your classes today.
               </p>
@@ -298,28 +329,48 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
           
-          {/* Main content grid */}
-          <div className="grid gap-6">
-            {/* Recent students section */}
+          {/* Admin-only actions */}
+          <RoleBasedAccess allowedRoles={['admin']}>
             <FadeIn>
-              <GlassCard>
-                <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {recentStudents.map((student) => (
-                    <StudentCard 
-                      key={student.id} 
-                      student={student}
-                    />
-                  ))}
-                </div>
-                <div className="mt-6 pt-3 border-t border-border/40">
-                  <Button variant="outline" className="w-full">
-                    View All Students
+              <GlassCard className="mb-8">
+                <h2 className="text-xl font-semibold mb-4">Administrator Actions</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <Button className="w-full flex items-center gap-2">
+                    <UserPlus className="w-4 h-4" />
+                    <span>Add New Teacher</span>
+                  </Button>
+                  <Button className="w-full flex items-center gap-2">
+                    <ClipboardList className="w-4 h-4" />
+                    <span>Manage Course Assignments</span>
+                  </Button>
+                  <Button className="w-full flex items-center gap-2">
+                    <Settings className="w-4 h-4" />
+                    <span>System Settings</span>
                   </Button>
                 </div>
               </GlassCard>
             </FadeIn>
-          </div>
+          </RoleBasedAccess>
+          
+          {/* Recent students section */}
+          <FadeIn>
+            <GlassCard>
+              <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {recentStudents.map((student) => (
+                  <StudentCard 
+                    key={student.id} 
+                    student={student}
+                  />
+                ))}
+              </div>
+              <div className="mt-6 pt-3 border-t border-border/40">
+                <Button variant="outline" className="w-full">
+                  View All Students
+                </Button>
+              </div>
+            </GlassCard>
+          </FadeIn>
         </main>
       </div>
     </div>

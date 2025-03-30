@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Table,
@@ -12,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Download, RefreshCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { exportToExcel } from '@/utils/excelExport';
+import { useToast } from "@/components/ui/use-toast";
 
 type Student = {
   id: string;
@@ -35,7 +36,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   courseId,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  // Mock data - in a real application, this would be fetched based on courseId and date
+  const { toast } = useToast();
+  
   const [students, setStudents] = useState<Student[]>([
     {
       id: "1",
@@ -103,7 +105,25 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   };
 
   const handleExport = () => {
-    alert("Exporting attendance data...");
+    const columns = [
+      { header: 'Student Name', key: 'name', width: 20 },
+      { header: 'Student ID', key: 'studentId', width: 15 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Check In', key: 'checkInTime', width: 15 },
+      { header: 'Check Out', key: 'checkOutTime', width: 15 },
+      { header: 'Notes', key: 'notes', width: 25 }
+    ];
+    
+    const courseTitle = courseId ? `Course_${courseId}` : 'Attendance';
+    const dateStr = date.toISOString().split('T')[0];
+    const filename = `${courseTitle}_Attendance_${dateStr}`;
+    
+    exportToExcel(filteredStudents, columns, filename);
+    
+    toast({
+      title: "Export successful",
+      description: "Attendance data has been exported to Excel",
+    });
   };
 
   const handleRefresh = () => {

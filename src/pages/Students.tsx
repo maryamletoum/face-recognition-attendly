@@ -6,6 +6,8 @@ import FadeIn from '@/components/animations/FadeIn';
 import { Download, Plus, Search, UserPlus } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedAccess from '@/components/RoleBasedAccess';
+import { exportToExcel } from '@/utils/excelExport';
+import { useToast } from "@/components/ui/use-toast";
 
 const students = [
   {
@@ -77,12 +79,30 @@ const students = [
 const Students: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const { isAdmin } = useAuth();
+  const { toast } = useToast();
   
   const filteredStudents = students.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.course.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleExportStudents = () => {
+    const columns = [
+      { header: 'Name', key: 'name', width: 20 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Course', key: 'course', width: 20 },
+      { header: 'Enrollment Date', key: 'enrollmentDate', width: 15 },
+      { header: 'Attendance', key: 'attendance', width: 15 }
+    ];
+    
+    exportToExcel(filteredStudents, columns, 'Students_Export');
+    
+    toast({
+      title: "Export successful",
+      description: "Student data has been exported to Excel",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,7 +122,7 @@ const Students: React.FC = () => {
             allowedRoles={['admin']}
             fallback={
               <div className="mt-4 md:mt-0">
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleExportStudents}>
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>
@@ -188,7 +208,7 @@ const Students: React.FC = () => {
                 Showing {filteredStudents.length} of {students.length} students
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handleExportStudents}>
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>

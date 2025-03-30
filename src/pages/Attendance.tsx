@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -10,8 +9,9 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import AttendanceTable from '@/components/AttendanceTable';
 import BackButton from '@/components/BackButton';
+import { exportToExcel } from '@/utils/excelExport';
+import { useToast } from "@/components/ui/use-toast";
 
-// Sample data - in a real app, this would come from an API
 const classes = [
   {
     id: "1",
@@ -72,6 +72,48 @@ const Attendance: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const handleExportSessions = () => {
+    if (!selectedClass) return;
+    
+    const currentClass = classes.find(c => c.id === selectedClass);
+    if (!currentClass) return;
+    
+    const columns = [
+      { header: 'Session ID', key: 'id', width: 15 },
+      { header: 'Date', key: 'formattedDate', width: 20 },
+      { header: 'Time', key: 'time', width: 15 },
+      { header: 'Attendance', key: 'attendanceFormatted', width: 15 }
+    ];
+    
+    const data = currentClass.sessions.map(session => ({
+      ...session,
+      formattedDate: format(session.date, "MMMM d, yyyy"),
+      attendanceFormatted: `${session.attendance}%`
+    }));
+    
+    exportToExcel(data, columns, `${currentClass.name}_Sessions`);
+    
+    toast({
+      title: "Export successful",
+      description: "Sessions data has been exported to Excel",
+    });
+  };
+
+  const handleExportCsv = () => {
+    const selectedClassData = classes.find(c => c.id === selectedClass);
+    const selectedSessionData = selectedClassData?.sessions.find(s => s.id === selectedSession);
+    
+    if (!selectedClassData || !selectedSessionData) return;
+    
+    const filename = `${selectedClassData.name}_Session${selectedSession}_${format(selectedSessionData.date, "yyyy-MM-dd")}`;
+    
+    toast({
+      title: "Preparing Export",
+      description: "Your file will be downloaded shortly",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background to-secondary/20">
@@ -109,7 +151,6 @@ const Attendance: React.FC = () => {
           </div>
         </div>
 
-        {/* Breadcrumb navigation */}
         <div className="flex items-center text-sm text-foreground/70 mb-6 overflow-x-auto">
           <div className="flex items-center">
             <Folder className="w-4 h-4 mr-1" />
@@ -138,7 +179,6 @@ const Attendance: React.FC = () => {
         </div>
 
         {!selectedClass ? (
-          // Category View - Class List
           <FadeIn>
             <GlassCard className="mb-6">
               <h2 className="text-lg font-semibold mb-4">Classes</h2>
@@ -193,7 +233,6 @@ const Attendance: React.FC = () => {
             </GlassCard>
           </FadeIn>
         ) : !selectedSession ? (
-          // Subcategory View - Session List
           <FadeIn>
             <div className="flex justify-between items-center mb-6">
               <Button 
@@ -203,10 +242,20 @@ const Attendance: React.FC = () => {
               >
                 Back to Classes
               </Button>
-              <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
-                <Filter className="w-4 h-4 mr-2" />
-                Filter Sessions
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
+                  <Filter className="w-4 h-4 mr-2" />
+                  Filter Sessions
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                  onClick={handleExportSessions}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export Sessions
+                </Button>
+              </div>
             </div>
             
             <GlassCard className="overflow-hidden">
@@ -262,7 +311,6 @@ const Attendance: React.FC = () => {
             </GlassCard>
           </FadeIn>
         ) : (
-          // Detailed Attendance Record Table View
           <FadeIn>
             <div className="flex justify-between items-center mb-6">
               <Button 
@@ -275,6 +323,7 @@ const Attendance: React.FC = () => {
               <Button 
                 variant="outline"
                 className="shadow-sm hover:shadow-md transition-shadow"
+                onClick={handleExportCsv}
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export CSV

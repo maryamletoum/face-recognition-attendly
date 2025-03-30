@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +18,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CookiesPolicy from "./pages/CookiesPolicy";
 import NewTeacher from "./pages/NewTeacher";
+import Teachers from "./pages/Teachers";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,7 @@ function App() {
               <Route path="/course/:id" element={<CourseDetails />} />
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/teachers" element={<Teachers />} />
               <Route path="/teachers/new" element={<NewTeacher />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

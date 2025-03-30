@@ -1,10 +1,12 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import { BookOpen, ChevronDown, Search } from "lucide-react";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
+import { useToast } from "@/hooks/use-toast";
 
 const courses = [
   {
@@ -52,12 +54,24 @@ const courses = [
 const Courses: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All Courses');
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const filteredCourses = courses.filter(course => 
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.instructor.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const handleAddNewCourse = () => {
+    // In a real app, this would navigate to a course creation page
+    // For now, we'll show a toast message
+    toast({
+      title: "Feature in development",
+      description: "Course creation functionality is coming soon!",
+    });
+    // You could add this later: navigate("/courses/new");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,7 +86,7 @@ const Courses: React.FC = () => {
             <p className="text-foreground/70">Manage your classes and course materials</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <Button>
+            <Button onClick={handleAddNewCourse}>
               <BookOpen className="w-4 h-4 mr-2" />
               Add New Course
             </Button>

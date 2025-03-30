@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { ArrowLeft, Save, User, Mail, Key } from "lucide-react";
+import { ArrowLeft, Save, User, Mail, Key, Upload, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
@@ -17,6 +18,8 @@ const NewTeacher: React.FC = () => {
     subjects: '',
   });
   
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -57,6 +60,43 @@ const NewTeacher: React.FC = () => {
     // Navigate back to teachers list
     navigate("/teachers");
   };
+  
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Create a URL for the selected image
+      const imageUrl = URL.createObjectURL(file);
+      setProfilePicture(imageUrl);
+      
+      toast({
+        title: "Profile picture uploaded",
+        description: "The profile picture has been successfully updated",
+      });
+    }
+  };
+  
+  const handleRemoveProfilePicture = () => {
+    // Revoke the object URL to avoid memory leaks
+    if (profilePicture) {
+      URL.revokeObjectURL(profilePicture);
+    }
+    
+    setProfilePicture(null);
+    
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
+    toast({
+      title: "Profile picture removed",
+      description: "The profile picture has been removed",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -72,6 +112,51 @@ const NewTeacher: React.FC = () => {
         <FadeIn>
           <GlassCard>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Profile Picture Section */}
+              <div className="flex flex-col items-center mb-4">
+                <Avatar className="w-24 h-24 mb-4">
+                  {profilePicture ? (
+                    <AvatarImage src={profilePicture} alt="Profile" />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                      <User className="h-10 w-10" />
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleProfilePictureClick}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload Photo
+                  </Button>
+                  
+                  {profilePicture && (
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleRemoveProfilePicture}
+                    >
+                      <Trash className="w-4 h-4 mr-2" />
+                      Remove
+                    </Button>
+                  )}
+                  
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </div>
+              
               <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium mb-1">

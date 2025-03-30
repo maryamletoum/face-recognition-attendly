@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -8,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedAccess from '@/components/RoleBasedAccess';
 import { exportToExcel } from '@/utils/excelExport';
 import { useToast } from "@/components/ui/use-toast";
+import BackButton from '@/components/BackButton';
 
 const students = [
   {
@@ -118,28 +118,29 @@ const Students: React.FC = () => {
             </p>
           </div>
           
-          <RoleBasedAccess 
-            allowedRoles={['admin']}
-            fallback={
-              <div className="mt-4 md:mt-0">
+          <div className="flex items-center gap-2 mt-4 md:mt-0">
+            <BackButton />
+            <RoleBasedAccess 
+              allowedRoles={['admin']}
+              fallback={
                 <Button variant="outline" onClick={handleExportStudents}>
                   <Download className="w-4 h-4 mr-2" />
                   Export
                 </Button>
+              }
+            >
+              <div className="flex gap-2">
+                <Button variant="outline">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Import
+                </Button>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Student
+                </Button>
               </div>
-            }
-          >
-            <div className="mt-4 md:mt-0 flex gap-2">
-              <Button variant="outline">
-                <UserPlus className="w-4 h-4 mr-2" />
-                Import
-              </Button>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Student
-              </Button>
-            </div>
-          </RoleBasedAccess>
+            </RoleBasedAccess>
+          </div>
         </div>
 
         <div className="mb-6">

@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import {
   BarChart4,
@@ -24,6 +23,7 @@ import NotificationBell from '@/components/NotificationBell';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedAccess from '@/components/RoleBasedAccess';
+import { useToast } from "@/hooks/use-toast";
 
 const getRandomAttendancePercentage = () => {
   return Math.floor(Math.random() * 30) + 70; // Random between 70-99%
@@ -69,6 +69,32 @@ const Dashboard: React.FC = () => {
   const [selectedCourse, setSelectedCourse] = useState("Web Development");
   const [currentDate, setCurrentDate] = useState(new Date());
   const { userRole, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  const handleAddTeacher = () => {
+    toast({
+      title: "Add Teacher",
+      description: "Redirecting to teacher creation form",
+    });
+    navigate("/teachers/new");
+  };
+  
+  const handleManageCourseAssignments = () => {
+    toast({
+      title: "Manage Course Assignments",
+      description: "Redirecting to course assignment management",
+    });
+    navigate("/courses");
+  };
+  
+  const handleSystemSettings = () => {
+    toast({
+      title: "System Settings",
+      description: "Redirecting to system settings",
+    });
+    navigate("/settings");
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -335,15 +361,24 @@ const Dashboard: React.FC = () => {
               <GlassCard className="mb-8">
                 <h2 className="text-xl font-semibold mb-4">Administrator Actions</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Button className="w-full flex items-center gap-2">
+                  <Button 
+                    className="w-full flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                    onClick={handleAddTeacher}
+                  >
                     <UserPlus className="w-4 h-4" />
                     <span>Add New Teacher</span>
                   </Button>
-                  <Button className="w-full flex items-center gap-2">
+                  <Button 
+                    className="w-full flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors"
+                    onClick={handleManageCourseAssignments}
+                  >
                     <ClipboardList className="w-4 h-4" />
                     <span>Manage Course Assignments</span>
                   </Button>
-                  <Button className="w-full flex items-center gap-2">
+                  <Button 
+                    className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors"
+                    onClick={handleSystemSettings}
+                  >
                     <Settings className="w-4 h-4" />
                     <span>System Settings</span>
                   </Button>

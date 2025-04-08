@@ -7,6 +7,8 @@ import { BookOpen, ChevronDown, Search } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useToast } from "@/hooks/use-toast";
+import RoleBasedAccess from '@/components/RoleBasedAccess';
+import { useAuth } from '@/contexts/AuthContext';
 
 const courses = [
   {
@@ -56,6 +58,7 @@ const Courses: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState('All Courses');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userRole } = useAuth();
 
   const filteredCourses = courses.filter(course => 
     course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -96,10 +99,12 @@ const Courses: React.FC = () => {
             <p className="text-foreground/70">Manage your classes and course materials</p>
           </div>
           <div className="mt-4 md:mt-0">
-            <Button onClick={handleAddNewCourse}>
-              <BookOpen className="w-4 h-4 mr-2" />
-              Add New Course
-            </Button>
+            <RoleBasedAccess allowedRoles={['admin']} fallback={null}>
+              <Button onClick={handleAddNewCourse}>
+                <BookOpen className="w-4 h-4 mr-2" />
+                Add New Course
+              </Button>
+            </RoleBasedAccess>
           </div>
         </div>
 

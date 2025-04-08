@@ -73,6 +73,16 @@ const Courses: React.FC = () => {
     // You could add this later: navigate("/courses/new");
   };
 
+  const handleTakeAttendance = (courseId: string) => {
+    // Navigate to attendance page with courseId and start session parameters
+    navigate(`/attendance?course=${courseId}&action=take`);
+    
+    toast({
+      title: "Attendance session started",
+      description: "Students can now check in for today's class",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-8">
@@ -148,12 +158,16 @@ const Courses: React.FC = () => {
                 
                 <div className="flex justify-between items-center mt-auto pt-4 border-t border-border/40">
                   <Link 
-                    to={`/courses/${course.id}`} 
+                    to={`/course/${course.id}`} 
                     className="text-sm text-primary hover:underline"
                   >
                     View Details
                   </Link>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleTakeAttendance(course.id)}
+                  >
                     Take Attendance
                   </Button>
                 </div>

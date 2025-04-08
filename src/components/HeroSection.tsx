@@ -1,13 +1,10 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
 import FadeIn from './animations/FadeIn';
 import GlassCard from './ui/GlassCard';
-
 const HeroSection: React.FC = () => {
-  return (
-    <section className="min-h-screen pt-24 pb-20 flex items-center">
+  return <section className="min-h-screen pt-24 pb-20 flex items-center">
       <div className="container px-4 mx-auto">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
@@ -39,14 +36,9 @@ const HeroSection: React.FC = () => {
             <FadeIn direction="up" delay={400}>
               <div className="flex items-center gap-2 text-sm text-foreground/70">
                 <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div 
-                      key={i} 
-                      className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-xs text-white font-medium border-2 border-background"
-                    >
+                  {[1, 2, 3, 4].map(i => <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center text-xs text-white font-medium border-2 border-background">
                       {i}
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
                 <span>Trusted by 100+ educational institutions</span>
               </div>
@@ -68,7 +60,7 @@ const HeroSection: React.FC = () => {
                       </p>
                       <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
                         <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg">
-                          <div className="text-3xl font-bold text-primary mb-1">99%</div>
+                          <div className="text-3xl font-bold text-primary mb-1">95%</div>
                           <div className="text-sm text-foreground/70">Accuracy</div>
                         </div>
                         <div className="flex flex-col items-center p-4 bg-primary/10 rounded-lg">
@@ -84,12 +76,12 @@ const HeroSection: React.FC = () => {
             
             {/* Decorative elements */}
             <div className="absolute top-1/4 right-0 -translate-y-1/2 translate-x-1/2 w-16 h-16 rounded-full bg-primary/30 backdrop-blur-md animate-float"></div>
-            <div className="absolute bottom-1/4 left-0 -translate-x-1/2 w-12 h-12 rounded-full bg-primary/20 backdrop-blur-md animate-float" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute bottom-1/4 left-0 -translate-x-1/2 w-12 h-12 rounded-full bg-primary/20 backdrop-blur-md animate-float" style={{
+            animationDelay: '1s'
+          }}></div>
           </FadeIn>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;

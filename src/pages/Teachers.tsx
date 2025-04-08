@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -60,12 +59,7 @@ const Teachers: React.FC = () => {
   };
   
   const handleEditTeacher = (id: string) => {
-    toast({
-      title: "Edit Teacher",
-      description: `Editing teacher ID: ${id}`,
-    });
-    // In a real app, navigate to edit page
-    // navigate(`/teachers/edit/${id}`);
+    navigate(`/teachers/edit/${id}`);
   };
   
   const handleDeleteTeacher = (id: string, name: string) => {

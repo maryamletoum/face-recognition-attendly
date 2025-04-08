@@ -19,6 +19,7 @@ import TermsOfService from "./pages/TermsOfService";
 import CookiesPolicy from "./pages/CookiesPolicy";
 import NewTeacher from "./pages/NewTeacher";
 import Teachers from "./pages/Teachers";
+import EditTeacher from "./pages/EditTeacher";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/teachers" element={<Teachers />} />
               <Route path="/teachers/new" element={<NewTeacher />} />
+              <Route path="/teachers/edit/:id" element={<EditTeacher />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/cookies-policy" element={<CookiesPolicy />} />

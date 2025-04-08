@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
 import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, BookOpen, Users, ArrowRight, Download } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import AttendanceTable from '@/components/AttendanceTable';
 import BackButton from '@/components/BackButton';
 import { exportToExcel } from '@/utils/excelExport';
 import { useToast } from "@/components/ui/use-toast";
+import FaceRecognition from '@/components/FaceRecognition';
 
 const classes = [
   {
@@ -72,7 +74,26 @@ const Attendance: React.FC = () => {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [isTakingAttendance, setIsTakingAttendance] = useState(false);
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Parse query parameters
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const courseId = queryParams.get('course');
+    const action = queryParams.get('action');
+    
+    if (courseId) {
+      setSelectedClass(courseId);
+      
+      // If action is "take", start attendance session
+      if (action === 'take') {
+        setIsTakingAttendance(true);
+      }
+    }
+  }, [location.search]);
 
   const handleExportSessions = () => {
     if (!selectedClass) return;
@@ -114,6 +135,14 @@ const Attendance: React.FC = () => {
       description: "Your file will be downloaded shortly",
     });
   };
+  
+  const handleFinishAttendance = () => {
+    setIsTakingAttendance(false);
+    toast({
+      title: "Attendance session completed",
+      description: "All student attendance has been recorded.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background to-secondary/20">
@@ -121,9 +150,13 @@ const Attendance: React.FC = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80">
-              Attendance
+              {isTakingAttendance ? "Taking Attendance" : "Attendance"}
             </h1>
-            <p className="text-foreground/70">Manage attendance records by category</p>
+            <p className="text-foreground/70">
+              {isTakingAttendance 
+                ? "Record student attendance for today's class" 
+                : "Manage attendance records by category"}
+            </p>
           </div>
           <div className="mt-4 md:mt-0 flex gap-2">
             <Button variant="outline" onClick={() => setIsCalendarOpen(!isCalendarOpen)} className="shadow-sm hover:shadow-md transition-shadow">
@@ -178,7 +211,61 @@ const Attendance: React.FC = () => {
           )}
         </div>
 
-        {!selectedClass ? (
+        {isTakingAttendance && (
+          <FadeIn>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <FaceRecognition />
+              </div>
+              <div>
+                <GlassCard>
+                  <h2 className="text-xl font-semibold mb-4">Attendance Session</h2>
+                  <p className="mb-6">Use face recognition or manually mark students' attendance for today's class.</p>
+                  
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium text-foreground/70 mb-2">Class Information:</h3>
+                    <p className="font-medium">{classes.find(c => c.id === selectedClass)?.name}</p>
+                    <p className="text-sm text-foreground/70">{classes.find(c => c.id === selectedClass)?.room}</p>
+                    <p className="text-sm text-foreground/70">{format(new Date(), "EEEE, MMMM d • h:mm a")}</p>
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <Button variant="outline" onClick={() => setIsTakingAttendance(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleFinishAttendance}>
+                      Finish Session
+                    </Button>
+                  </div>
+                </GlassCard>
+                
+                <GlassCard className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Today's Attendance</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-green-500">12</p>
+                      <p className="text-foreground/70 text-sm">Present</p>
+                    </div>
+                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-amber-500">3</p>
+                      <p className="text-foreground/70 text-sm">Late</p>
+                    </div>
+                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-red-500">2</p>
+                      <p className="text-foreground/70 text-sm">Absent</p>
+                    </div>
+                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold">17</p>
+                      <p className="text-foreground/70 text-sm">Total</p>
+                    </div>
+                  </div>
+                </GlassCard>
+              </div>
+            </div>
+          </FadeIn>
+        )}
+
+        {!isTakingAttendance && !selectedClass ? (
           <FadeIn>
             <GlassCard className="mb-6">
               <h2 className="text-lg font-semibold mb-4">Classes</h2>
@@ -232,7 +319,7 @@ const Attendance: React.FC = () => {
               </div>
             </GlassCard>
           </FadeIn>
-        ) : !selectedSession ? (
+        ) : !isTakingAttendance && !selectedSession ? (
           <FadeIn>
             <div className="flex justify-between items-center mb-6">
               <Button 
@@ -310,7 +397,7 @@ const Attendance: React.FC = () => {
               </div>
             </GlassCard>
           </FadeIn>
-        ) : (
+        ) : !isTakingAttendance && selectedSession ? (
           <FadeIn>
             <div className="flex justify-between items-center mb-6">
               <Button 
@@ -347,7 +434,7 @@ const Attendance: React.FC = () => {
               />
             </GlassCard>
           </FadeIn>
-        )}
+        ) : null}
       </div>
     </div>
   );

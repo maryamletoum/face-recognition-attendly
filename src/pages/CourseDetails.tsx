@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -65,9 +66,10 @@ const courses = [
 ];
 
 const CourseDetails: React.FC = () => {
-  const { courseId } = useParams();
+  const { id: courseId } = useParams();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Simulating API call to fetch course details
@@ -84,6 +86,9 @@ const CourseDetails: React.FC = () => {
       title: "Attendance session started",
       description: "Students can now check in for today's class.",
     });
+    
+    // Navigate to the attendance page with course ID as query parameter
+    navigate(`/attendance?course=${courseId}&action=take`);
   };
 
   if (loading) {

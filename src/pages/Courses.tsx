@@ -82,7 +82,7 @@ const Courses: React.FC = () => {
     
     toast({
       title: "Attendance session started",
-      description: "Students can now check in for today's class",
+      description: "You can now mark attendance for today's class",
     });
   };
 

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Table,
@@ -9,10 +10,10 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Filter, Download, RefreshCcw } from "lucide-react";
+import { Search, Filter, Download, RefreshCcw, Check, X, Clock, User, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { exportToExcel } from '@/utils/excelExport';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type Student = {
   id: string;
@@ -22,18 +23,22 @@ type Student = {
   checkInTime: string;
   checkOutTime: string;
   notes: string;
+  attendanceRate: number; // Percentage of attendance
+  isDeprived: boolean; // Whether the student is deprived from the course due to absences
 };
 
 type AttendanceTableProps = {
   className?: string;
   date: Date;
   courseId: string;
+  isSessionActive?: boolean;
 };
 
 const AttendanceTable: React.FC<AttendanceTableProps> = ({
   className,
   date,
   courseId,
+  isSessionActive = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -47,6 +52,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       checkInTime: "09:05 AM",
       checkOutTime: "04:30 PM",
       notes: "",
+      attendanceRate: 92,
+      isDeprived: false
     },
     {
       id: "2",
@@ -56,6 +63,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       checkInTime: "08:58 AM",
       checkOutTime: "04:30 PM",
       notes: "",
+      attendanceRate: 95,
+      isDeprived: false
     },
     {
       id: "3",
@@ -65,6 +74,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       checkInTime: "09:30 AM",
       checkOutTime: "04:30 PM",
       notes: "Bus delay",
+      attendanceRate: 87,
+      isDeprived: false
     },
     {
       id: "4",
@@ -74,6 +85,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       checkInTime: "",
       checkOutTime: "",
       notes: "Sick leave",
+      attendanceRate: 73,
+      isDeprived: true
     },
     {
       id: "5",
@@ -83,6 +96,8 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       checkInTime: "08:50 AM",
       checkOutTime: "04:30 PM",
       notes: "",
+      attendanceRate: 88,
+      isDeprived: false
     },
   ]);
 
@@ -111,7 +126,9 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       { header: 'Status', key: 'status', width: 15 },
       { header: 'Check In', key: 'checkInTime', width: 15 },
       { header: 'Check Out', key: 'checkOutTime', width: 15 },
-      { header: 'Notes', key: 'notes', width: 25 }
+      { header: 'Notes', key: 'notes', width: 20 },
+      { header: 'Attendance Rate', key: 'attendanceRate', width: 15 },
+      { header: 'Deprived', key: 'isDeprived', width: 15 }
     ];
     
     const courseTitle = courseId ? `Course_${courseId}` : 'Attendance';
@@ -126,10 +143,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     });
   };
 
-  const handleRefresh = () => {
-    alert("Refreshing attendance data from face recognition system...");
-  };
-
   const updateStudentStatus = (studentId: string, status: 'present' | 'absent' | 'late') => {
     setStudents(prevStudents => 
       prevStudents.map(student => 
@@ -138,6 +151,18 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
           : student
       )
     );
+    
+    toast({
+      title: "Attendance updated",
+      description: `Student marked as ${status}`,
+    });
+  };
+
+  const submitAttendance = () => {
+    toast({
+      title: "Attendance submitted",
+      description: "All student attendance records have been saved",
+    });
   };
 
   return (
@@ -161,11 +186,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
             <Button variant="outline" size="icon" title="Export" onClick={handleExport}>
               <Download className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" title="Refresh" onClick={handleRefresh}>
-              <RefreshCcw className="h-4 w-4" />
-            </Button>
           </div>
         </div>
+        
+        {isSessionActive && (
+          <Button onClick={submitAttendance} className="whitespace-nowrap">
+            Submit Attendance
+          </Button>
+        )}
       </div>
 
       <div className="rounded-lg overflow-hidden border border-border">
@@ -175,10 +203,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
               <TableHead className="w-[200px]">Student Name</TableHead>
               <TableHead>Student ID</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Check In</TableHead>
-              <TableHead>Check Out</TableHead>
+              <TableHead>Attendance Rate</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Notes</TableHead>
-              <TableHead>Actions</TableHead>
+              {isSessionActive && <TableHead>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -199,42 +227,64 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       {student.status.charAt(0).toUpperCase() + student.status.slice(1) || "Unmarked"}
                     </div>
                   </TableCell>
-                  <TableCell>{student.checkInTime || "-"}</TableCell>
-                  <TableCell>{student.checkOutTime || "-"}</TableCell>
-                  <TableCell>{student.notes || "-"}</TableCell>
                   <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant={student.status === 'present' ? 'default' : 'outline'}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => updateStudentStatus(student.id, 'present')}
-                      >
-                        Present
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={student.status === 'absent' ? 'default' : 'outline'}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => updateStudentStatus(student.id, 'absent')}
-                      >
-                        Absent
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={student.status === 'late' ? 'default' : 'outline'}
-                        className="h-7 px-2 text-xs"
-                        onClick={() => updateStudentStatus(student.id, 'late')}
-                      >
-                        Late
-                      </Button>
+                    <div className={cn(
+                      "font-medium",
+                      student.attendanceRate >= 90 ? "text-green-500" :
+                      student.attendanceRate >= 75 ? "text-amber-500" : 
+                      "text-red-500"
+                    )}>
+                      {student.attendanceRate}%
                     </div>
                   </TableCell>
+                  <TableCell>
+                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                      student.isDeprived 
+                        ? "bg-red-500/10 text-red-500 border-red-200" 
+                        : "bg-green-500/10 text-green-500 border-green-200"
+                    }`}>
+                      {student.isDeprived ? "Deprived" : "Approved"}
+                    </div>
+                  </TableCell>
+                  <TableCell>{student.notes || "-"}</TableCell>
+                  {isSessionActive && (
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant={student.status === 'present' ? 'default' : 'outline'}
+                          className="h-7 px-2 text-xs"
+                          onClick={() => updateStudentStatus(student.id, 'present')}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Present
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={student.status === 'absent' ? 'default' : 'outline'}
+                          className="h-7 px-2 text-xs"
+                          onClick={() => updateStudentStatus(student.id, 'absent')}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Absent
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={student.status === 'late' ? 'default' : 'outline'}
+                          className="h-7 px-2 text-xs"
+                          onClick={() => updateStudentStatus(student.id, 'late')}
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          Late
+                        </Button>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4 text-foreground/70">
+                <TableCell colSpan={isSessionActive ? 7 : 6} className="text-center py-4 text-foreground/70">
                   No students found
                 </TableCell>
               </TableRow>

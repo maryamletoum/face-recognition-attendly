@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -79,7 +78,6 @@ const Attendance: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Parse query parameters
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const courseId = queryParams.get('course');
@@ -88,7 +86,6 @@ const Attendance: React.FC = () => {
     if (courseId) {
       setSelectedClass(courseId);
       
-      // If action is "take", start attendance session
       if (action === 'take') {
         setIsTakingAttendance(true);
       }
@@ -213,55 +210,44 @@ const Attendance: React.FC = () => {
 
         {isTakingAttendance && (
           <FadeIn>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <FaceRecognition />
+            <GlassCard className="mb-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-xl font-semibold">Taking Attendance</h2>
+                  <p className="text-sm text-foreground/70">
+                    {format(new Date(), "EEEE, MMMM d • h:mm a")} | {classes.find(c => c.id === selectedClass)?.name}
+                  </p>
+                </div>
+                <Button onClick={handleFinishAttendance} variant="outline">
+                  End Session
+                </Button>
               </div>
-              <div>
-                <GlassCard>
-                  <h2 className="text-xl font-semibold mb-4">Attendance Session</h2>
-                  <p className="mb-6">Use face recognition or manually mark students' attendance for today's class.</p>
-                  
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium text-foreground/70 mb-2">Class Information:</h3>
-                    <p className="font-medium">{classes.find(c => c.id === selectedClass)?.name}</p>
-                    <p className="text-sm text-foreground/70">{classes.find(c => c.id === selectedClass)?.room}</p>
-                    <p className="text-sm text-foreground/70">{format(new Date(), "EEEE, MMMM d • h:mm a")}</p>
-                  </div>
-                  
-                  <div className="flex justify-between">
-                    <Button variant="outline" onClick={() => setIsTakingAttendance(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleFinishAttendance}>
-                      Finish Session
-                    </Button>
-                  </div>
-                </GlassCard>
-                
-                <GlassCard className="mt-6">
-                  <h3 className="text-lg font-semibold mb-4">Today's Attendance</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-green-500">12</p>
-                      <p className="text-foreground/70 text-sm">Present</p>
-                    </div>
-                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-amber-500">3</p>
-                      <p className="text-foreground/70 text-sm">Late</p>
-                    </div>
-                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
-                      <p className="text-2xl font-bold text-red-500">2</p>
-                      <p className="text-foreground/70 text-sm">Absent</p>
-                    </div>
-                    <div className="p-3 bg-secondary/30 rounded-lg text-center">
-                      <p className="text-2xl font-bold">17</p>
-                      <p className="text-foreground/70 text-sm">Total</p>
-                    </div>
-                  </div>
-                </GlassCard>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-green-500">12</p>
+                  <p className="text-foreground/70 text-sm">Present</p>
+                </div>
+                <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-amber-500">3</p>
+                  <p className="text-foreground/70 text-sm">Late</p>
+                </div>
+                <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                  <p className="text-2xl font-bold text-red-500">2</p>
+                  <p className="text-foreground/70 text-sm">Absent</p>
+                </div>
+                <div className="p-3 bg-secondary/30 rounded-lg text-center">
+                  <p className="text-2xl font-bold">17</p>
+                  <p className="text-foreground/70 text-sm">Total</p>
+                </div>
               </div>
-            </div>
+              
+              <AttendanceTable 
+                date={new Date()}
+                courseId={selectedClass || ""}
+                isSessionActive={true}
+              />
+            </GlassCard>
           </FadeIn>
         )}
 
@@ -305,7 +291,7 @@ const Attendance: React.FC = () => {
                       </div>
                     </div>
                     
-                    <div className="mt-4 pt-4 border-t border-border/40">
+                    <div className="mt-4 pt-4 border-t border-border">
                       <Button 
                         className="w-full shadow-sm hover:shadow-md transition-shadow"
                         onClick={() => setSelectedClass(classItem.id)}
@@ -431,6 +417,7 @@ const Attendance: React.FC = () => {
               <AttendanceTable 
                 date={classes.find(c => c.id === selectedClass)?.sessions.find(s => s.id === selectedSession)?.date || new Date()}
                 courseId={selectedClass || ""}
+                isSessionActive={false}
               />
             </GlassCard>
           </FadeIn>

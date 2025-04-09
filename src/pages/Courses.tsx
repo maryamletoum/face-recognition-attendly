@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { BookOpen, ChevronDown, Search } from "lucide-react";
+import { Book, ChevronDown, Search } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '@/components/BackButton';
 import { useToast } from "@/hooks/use-toast";
@@ -101,7 +101,7 @@ const Courses: React.FC = () => {
           <div className="mt-4 md:mt-0">
             <RoleBasedAccess allowedRoles={['admin']} fallback={null}>
               <Button onClick={handleAddNewCourse}>
-                <BookOpen className="w-4 h-4 mr-2" />
+                <Book className="w-4 h-4 mr-2" />
                 Add New Course
               </Button>
             </RoleBasedAccess>
@@ -133,7 +133,7 @@ const Courses: React.FC = () => {
               <GlassCard className="h-full" hoverEffect>
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-primary/10 text-primary rounded-lg p-3">
-                    <BookOpen className="w-6 h-6" />
+                    <Book className="w-6 h-6" />
                   </div>
                   <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded font-medium">
                     {course.code}

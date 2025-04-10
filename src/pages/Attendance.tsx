@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, BookOpen, Users, ArrowRight, Download } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, Book, Users, ArrowRight, Download, Clock, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -12,6 +13,11 @@ import BackButton from '@/components/BackButton';
 import { exportToExcel } from '@/utils/excelExport';
 import { useToast } from "@/components/ui/use-toast";
 import FaceRecognition from '@/components/FaceRecognition';
+import DeprivationSettings from '@/components/DeprivationSettings';
+import { useAuth } from '@/contexts/AuthContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import StudentAttendanceHistory from '@/components/StudentAttendanceHistory';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const classes = [
   {
@@ -68,15 +74,60 @@ const classes = [
   }
 ];
 
+// Sample student data for the attendance history
+const sampleAttendanceHistory = [
+  {
+    date: new Date(2023, 8, 5),
+    status: 'present' as const,
+    excused: false
+  },
+  {
+    date: new Date(2023, 8, 12),
+    status: 'absent' as const,
+    excused: true,
+    excuseType: 'medical' as const,
+    notes: 'Doctor appointment'
+  },
+  {
+    date: new Date(2023, 8, 19),
+    status: 'late' as const,
+    excused: true,
+    excuseType: 'other' as const,
+    notes: 'Traffic delay'
+  },
+  {
+    date: new Date(2023, 8, 26),
+    status: 'present' as const,
+    excused: false
+  },
+  {
+    date: new Date(2023, 9, 3),
+    status: 'absent' as const,
+    excused: false
+  },
+  {
+    date: new Date(2023, 9, 10),
+    status: 'present' as const,
+    excused: false
+  }
+];
+
 const Attendance: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [isTakingAttendance, setIsTakingAttendance] = useState(false);
+  const [showDeprivationSettings, setShowDeprivationSettings] = useState(false);
+  const [showStudentHistory, setShowStudentHistory] = useState(false);
+  const [selectedStudentName, setSelectedStudentName] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [activeTab, setActiveTab] = useState("sessions");
+  
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
+  const { userRole } = useAuth();
   
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -140,6 +191,12 @@ const Attendance: React.FC = () => {
       description: "All student attendance has been recorded.",
     });
   };
+  
+  const handleViewStudentHistory = () => {
+    setSelectedStudentName('John Smith');
+    setSelectedStudentId('ST001');
+    setShowStudentHistory(true);
+  };
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background to-secondary/20">
@@ -178,6 +235,16 @@ const Attendance: React.FC = () => {
               </div>
             )}
             <BackButton className="shadow-sm hover:shadow-md transition-shadow" />
+            {userRole === 'admin' && !isTakingAttendance && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeprivationSettings(true)}
+                className="shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            )}
           </div>
         </div>
 
@@ -191,7 +258,7 @@ const Attendance: React.FC = () => {
             <>
               <ArrowRight className="w-3 h-3 mx-2" />
               <div className="flex items-center">
-                <BookOpen className="w-4 h-4 mr-1" />
+                <Book className="w-4 h-4 mr-1" />
                 <span>{classes.find(c => c.id === selectedClass)?.name}</span>
               </div>
             </>
@@ -247,6 +314,20 @@ const Attendance: React.FC = () => {
                 courseId={selectedClass || ""}
                 isSessionActive={true}
               />
+              
+              <div className="mt-6 text-sm text-foreground/70 border-t border-border/30 pt-4 flex justify-between items-center">
+                <span>
+                  <FileText className="w-4 h-4 inline mr-2" />
+                  Emails will be sent to absent students automatically
+                </span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleViewStudentHistory}
+                >
+                  View Student History
+                </Button>
+              </div>
             </GlassCard>
           </FadeIn>
         )}
@@ -266,7 +347,7 @@ const Attendance: React.FC = () => {
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="bg-primary/10 text-primary rounded-lg p-3">
-                        <BookOpen className="w-6 h-6" />
+                        <Book className="w-6 h-6" />
                       </div>
                       <span className="text-sm bg-primary/10 text-primary px-2 py-1 rounded font-medium">
                         {classItem.code}
@@ -316,10 +397,6 @@ const Attendance: React.FC = () => {
                 Back to Classes
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" className="shadow-sm hover:shadow-md transition-shadow">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filter Sessions
-                </Button>
                 <Button 
                   variant="outline" 
                   className="shadow-sm hover:shadow-md transition-shadow"
@@ -331,56 +408,103 @@ const Attendance: React.FC = () => {
               </div>
             </div>
             
-            <GlassCard className="overflow-hidden">
-              <div className="p-4 border-b border-border">
-                <h2 className="text-lg font-semibold">
-                  {classes.find(c => c.id === selectedClass)?.name} - Sessions
+            <GlassCard className="mb-6">
+              <div className="border-b border-border pb-4 mb-6">
+                <h2 className="text-lg font-semibold mb-2">
+                  {classes.find(c => c.id === selectedClass)?.name}
                 </h2>
-                <p className="text-sm text-foreground/70">
-                  Select a session to view detailed attendance records
-                </p>
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full max-w-md grid-cols-2">
+                    <TabsTrigger value="sessions">Sessions</TabsTrigger>
+                    <TabsTrigger value="students">Students</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border/40">
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
-                      <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
-                      <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
-                        <td className="py-3 px-4">Session #{session.id}</td>
-                        <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
-                        <td className="py-3 px-4">{session.time}</td>
-                        <td className="py-3 px-4">
-                          <div className={cn(
-                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                            session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
-                            session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
-                            "bg-red-500/10 text-red-500 border-red-200"
-                          )}>
-                            {session.attendance}%
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => setSelectedSession(session.id)}
-                          >
-                            View Details
-                          </Button>
-                        </td>
+              
+              <TabsContent value="sessions" className="mt-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-border/40">
+                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
+                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
+                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
+                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
+                        <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
+                        <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
+                          <td className="py-3 px-4">Session #{session.id}</td>
+                          <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
+                          <td className="py-3 px-4">{session.time}</td>
+                          <td className="py-3 px-4">
+                            <div className={cn(
+                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                              session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
+                              session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
+                              "bg-red-500/10 text-red-500 border-red-200"
+                            )}>
+                              {session.attendance}%
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setSelectedSession(session.id)}
+                            >
+                              View Details
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="students" className="mt-0">
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
+                    <input
+                      type="text"
+                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-border glass"
+                      placeholder="Search students..."
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-3">
+                  {[...Array(5)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
+                      onClick={handleViewStudentHistory}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                          {String.fromCharCode(65 + i)}
+                        </div>
+                        <div>
+                          <p className="font-medium">Student {i + 1}</p>
+                          <p className="text-sm text-foreground/70">ID: ST00{i + 1}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className={cn(
+                          "font-medium",
+                          Math.random() > 0.3 ? "text-green-500" : "text-amber-500"
+                        )}>
+                          {Math.floor(85 + Math.random() * 15)}%
+                        </div>
+                        <p className="text-xs text-foreground/60">Attendance Rate</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
             </GlassCard>
           </FadeIn>
         ) : !isTakingAttendance && selectedSession ? (
@@ -423,6 +547,26 @@ const Attendance: React.FC = () => {
           </FadeIn>
         ) : null}
       </div>
+      
+      {/* Deprivation Settings Dialog */}
+      <Dialog open={showDeprivationSettings} onOpenChange={setShowDeprivationSettings}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Attendance & Deprivation Settings</DialogTitle>
+          </DialogHeader>
+          <DeprivationSettings />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Student Attendance History Dialog */}
+      <StudentAttendanceHistory 
+        isOpen={showStudentHistory}
+        onOpenChange={setShowStudentHistory}
+        studentName={selectedStudentName}
+        studentId={selectedStudentId}
+        attendanceRecords={sampleAttendanceHistory}
+        overallAttendance={87}
+      />
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import {
   LogOut,
   UserPlus,
   ClipboardList,
+  GraduationCap,
 } from "lucide-react";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
@@ -64,13 +66,57 @@ const recentStudents = [
   },
 ];
 
+const myCourses = [
+  {
+    id: "1",
+    name: "Web Development",
+    instructor: "Prof. Jane Doe",
+    schedule: "Mon/Wed/Fri 10:00 AM",
+    attendanceRate: 92,
+    lastAttendance: "Today, 10:05 AM",
+  },
+  {
+    id: "2",
+    name: "Data Structures",
+    instructor: "Prof. Robert Smith",
+    schedule: "Tue/Thu 2:00 PM",
+    attendanceRate: 85,
+    lastAttendance: "Yesterday, 2:00 PM",
+  },
+  {
+    id: "3",
+    name: "Mobile App Development",
+    instructor: "Prof. Maria Garcia",
+    schedule: "Mon/Wed 1:00 PM",
+    attendanceRate: 78,
+    lastAttendance: "Mon, Apr 8, 1:00 PM",
+  },
+];
+
 const Dashboard: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState("Web Development");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { userRole, logout, isAdmin } = useAuth();
+  const { userRole, logout, isAdmin, userEmail } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const isStudent = () => userRole === 'student';
+  
+  // Extract student ID from email for student users (format: student-{id})
+  const studentId = userEmail?.startsWith('student-') 
+    ? userEmail.replace('student-', '')
+    : null;
+  
+  // For student view, create personal info
+  const studentInfo = {
+    id: studentId || "0",
+    name: `Student ${studentId || ""}`,
+    email: userEmail || "",
+    attendancePercentage: 89,
+    lastAttendance: "Today, 9:05 AM",
+    status: "present" as const,
+  };
   
   const handleAddTeacher = () => {
     toast({
@@ -131,13 +177,15 @@ const Dashboard: React.FC = () => {
             Attendance
           </Link>
           
-          <Link 
-            to="/students" 
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
-          >
-            <Users className="w-5 h-5" />
-            Students
-          </Link>
+          <RoleBasedAccess allowedRoles={['admin', 'teacher']}>
+            <Link 
+              to="/students" 
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <Users className="w-5 h-5" />
+              Students
+            </Link>
+          </RoleBasedAccess>
           
           <RoleBasedAccess allowedRoles={['admin']}>
             <Link 
@@ -173,11 +221,17 @@ const Dashboard: React.FC = () => {
           
           <div className="flex items-center gap-3 px-2">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-5 h-5 text-primary" />
+              {isStudent() ? (
+                <GraduationCap className="w-5 h-5 text-primary" />
+              ) : (
+                <User className="w-5 h-5 text-primary" />
+              )}
             </div>
             <div className="flex-grow min-w-0">
-              <p className="font-medium truncate">{isAdmin() ? 'Administrator' : 'Teacher'}</p>
-              <p className="text-xs text-foreground/70 truncate">{localStorage.getItem('userEmail') || 'user@attendly.com'}</p>
+              <p className="font-medium truncate">
+                {isAdmin() ? 'Administrator' : isStudent() ? 'Student' : 'Teacher'}
+              </p>
+              <p className="text-xs text-foreground/70 truncate">{userEmail || 'user@attendly.com'}</p>
             </div>
             <button 
               className="text-foreground/70 hover:text-foreground"
@@ -227,13 +281,15 @@ const Dashboard: React.FC = () => {
                 Attendance
               </Link>
               
-              <Link 
-                to="/students" 
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
-              >
-                <Users className="w-5 h-5" />
-                Students
-              </Link>
+              <RoleBasedAccess allowedRoles={['admin', 'teacher']}>
+                <Link 
+                  to="/students" 
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-foreground/70 hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  <Users className="w-5 h-5" />
+                  Students
+                </Link>
+              </RoleBasedAccess>
               
               <RoleBasedAccess allowedRoles={['admin']}>
                 <Link 
@@ -283,7 +339,11 @@ const Dashboard: React.FC = () => {
               
               <div className="relative">
                 <button className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
+                  {isStudent() ? (
+                    <GraduationCap className="w-5 h-5 text-primary" />
+                  ) : (
+                    <User className="w-5 h-5 text-primary" />
+                  )}
                 </button>
               </div>
             </div>
@@ -295,10 +355,12 @@ const Dashboard: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-grow">
               <h2 className="text-2xl font-semibold mb-2">
-                Welcome back, {isAdmin() ? 'Administrator' : 'Teacher'}
+                Welcome back, {isAdmin() ? 'Administrator' : isStudent() ? `Student ${studentId}` : 'Teacher'}
               </h2>
               <p className="text-foreground/70">
-                Here's what's happening with your classes today.
+                {isStudent() 
+                  ? "Here's your personal attendance information."
+                  : "Here's what's happening with your classes today."}
               </p>
             </div>
             
@@ -308,104 +370,269 @@ const Dashboard: React.FC = () => {
                 {currentDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
               </Button>
               
-              <div className="relative">
-                <Button variant="outline" size="sm" className="h-9 flex items-center gap-1">
-                  <span>{selectedCourse}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </div>
+              {!isStudent() && (
+                <div className="relative">
+                  <Button variant="outline" size="sm" className="h-9 flex items-center gap-1">
+                    <span>{selectedCourse}</span>
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           
-          {/* Stats cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {[
-              { label: "Total Students", value: "156", icon: <Users className="w-5 h-5" />, change: "+3%" },
-              { label: "Present Today", value: "132", icon: <User className="w-5 h-5" />, change: "+5%" },
-              { label: "Absent Today", value: "18", icon: <User className="w-5 h-5" />, change: "-2%" },
-              { label: "Average Attendance", value: "94%", icon: <BarChart4 className="w-5 h-5" />, change: "+1%" },
-            ].map((stat, index) => (
-              <FadeIn key={index} delay={index * 50}>
-                <GlassCard className="h-full">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-foreground/70 text-sm">{stat.label}</p>
-                      <h3 className="text-2xl font-semibold mt-1">{stat.value}</h3>
+          {/* Student view */}
+          {isStudent() ? (
+            <>
+              {/* Student stats */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <FadeIn delay={0}>
+                  <GlassCard className="h-full">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-foreground/70 text-sm">Overall Attendance</p>
+                        <h3 className="text-2xl font-semibold mt-1">89%</h3>
+                      </div>
+                      <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                        <BarChart4 className="w-5 h-5" />
+                      </div>
                     </div>
-                    <div className={cn(
-                      "w-9 h-9 rounded-full flex items-center justify-center",
-                      index === 0 || index === 3 ? "bg-primary/10 text-primary" :
-                      index === 1 ? "bg-green-500/10 text-green-500" :
-                      "bg-amber-500/10 text-amber-500"
-                    )}>
-                      {stat.icon}
+                    <div className="mt-3 flex items-center">
+                      <span className="text-xs text-green-500">+2%</span>
+                      <span className="text-xs text-foreground/60 ml-1">vs. last month</span>
                     </div>
-                  </div>
-                  <div className="mt-3 flex items-center">
-                    <span className={cn(
-                      "text-xs",
-                      stat.change.startsWith("+") ? "text-green-500" : "text-amber-500"
-                    )}>
-                      {stat.change}
-                    </span>
-                    <span className="text-xs text-foreground/60 ml-1">vs. last week</span>
+                  </GlassCard>
+                </FadeIn>
+                
+                <FadeIn delay={50}>
+                  <GlassCard className="h-full">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-foreground/70 text-sm">Present Days</p>
+                        <h3 className="text-2xl font-semibold mt-1">42</h3>
+                      </div>
+                      <div className="w-9 h-9 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center">
+                        <User className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <span className="text-xs text-foreground/60">Total school days: 48</span>
+                    </div>
+                  </GlassCard>
+                </FadeIn>
+                
+                <FadeIn delay={100}>
+                  <GlassCard className="h-full">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-foreground/70 text-sm">Absences</p>
+                        <h3 className="text-2xl font-semibold mt-1">4</h3>
+                      </div>
+                      <div className="w-9 h-9 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                        <User className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <span className="text-xs text-amber-500">3 excused</span>
+                      <span className="text-xs text-foreground/60 ml-1">1 unexcused</span>
+                    </div>
+                  </GlassCard>
+                </FadeIn>
+                
+                <FadeIn delay={150}>
+                  <GlassCard className="h-full">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-foreground/70 text-sm">Late Arrivals</p>
+                        <h3 className="text-2xl font-semibold mt-1">2</h3>
+                      </div>
+                      <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                        <Clock className="w-5 h-5" />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center">
+                      <span className="text-xs text-foreground/60">Average delay: 8 mins</span>
+                    </div>
+                  </GlassCard>
+                </FadeIn>
+              </div>
+              
+              {/* My courses section */}
+              <FadeIn>
+                <GlassCard className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4">My Courses</h2>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-border/40">
+                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Course</th>
+                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Instructor</th>
+                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Schedule</th>
+                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
+                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Last Attended</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {myCourses.map((course) => (
+                          <tr key={course.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                                  {course.name.charAt(0)}
+                                </div>
+                                <span>{course.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-foreground/70">{course.instructor}</td>
+                            <td className="py-3 px-4">{course.schedule}</td>
+                            <td className="py-3 px-4">
+                              <span className={cn(
+                                "px-2 py-1 rounded-full text-sm",
+                                course.attendanceRate >= 90 ? "bg-green-500/10 text-green-500" :
+                                course.attendanceRate >= 80 ? "bg-amber-500/10 text-amber-500" :
+                                "bg-red-500/10 text-red-500"
+                              )}>
+                                {course.attendanceRate}%
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-foreground/70">{course.lastAttendance}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </GlassCard>
               </FadeIn>
-            ))}
-          </div>
-          
-          {/* Admin-only actions */}
-          <RoleBasedAccess allowedRoles={['admin']}>
-            <FadeIn>
-              <GlassCard className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Administrator Actions</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <Button 
-                    className="w-full flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors"
-                    onClick={handleAddTeacher}
-                  >
-                    <UserPlus className="w-4 h-4" />
-                    <span>Add New Teacher</span>
+              
+              {/* Student profile card */}
+              <FadeIn>
+                <GlassCard className="max-w-md">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                      <GraduationCap className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold">Student {studentId}</h3>
+                      <p className="text-foreground/70">ID: {studentId}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <p className="text-sm text-foreground/70">Email</p>
+                      <p>{userEmail}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-foreground/70">Status</p>
+                      <p className="text-green-500">Active</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-foreground/70">Program</p>
+                      <p>Computer Science</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-foreground/70">Year</p>
+                      <p>2nd Year</p>
+                    </div>
+                  </div>
+                  <Button className="w-full" onClick={() => navigate("/attendance")}>
+                    View Full Attendance History
                   </Button>
-                  <Button 
-                    className="w-full flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors"
-                    onClick={handleManageCourseAssignments}
-                  >
-                    <ClipboardList className="w-4 h-4" />
-                    <span>Manage Course Assignments</span>
-                  </Button>
-                  <Button 
-                    className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors"
-                    onClick={handleSystemSettings}
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>System Settings</span>
-                  </Button>
-                </div>
-              </GlassCard>
-            </FadeIn>
-          </RoleBasedAccess>
-          
-          {/* Recent students section */}
-          <FadeIn>
-            <GlassCard>
-              <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {recentStudents.map((student) => (
-                  <StudentCard 
-                    key={student.id} 
-                    student={student}
-                  />
+                </GlassCard>
+              </FadeIn>
+            </>
+          ) : (
+            <>
+              {/* Stats cards for admin/teacher */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: "Total Students", value: "156", icon: <Users className="w-5 h-5" />, change: "+3%" },
+                  { label: "Present Today", value: "132", icon: <User className="w-5 h-5" />, change: "+5%" },
+                  { label: "Absent Today", value: "18", icon: <User className="w-5 h-5" />, change: "-2%" },
+                  { label: "Average Attendance", value: "94%", icon: <BarChart4 className="w-5 h-5" />, change: "+1%" },
+                ].map((stat, index) => (
+                  <FadeIn key={index} delay={index * 50}>
+                    <GlassCard className="h-full">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="text-foreground/70 text-sm">{stat.label}</p>
+                          <h3 className="text-2xl font-semibold mt-1">{stat.value}</h3>
+                        </div>
+                        <div className={cn(
+                          "w-9 h-9 rounded-full flex items-center justify-center",
+                          index === 0 || index === 3 ? "bg-primary/10 text-primary" :
+                          index === 1 ? "bg-green-500/10 text-green-500" :
+                          "bg-amber-500/10 text-amber-500"
+                        )}>
+                          {stat.icon}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center">
+                        <span className={cn(
+                          "text-xs",
+                          stat.change.startsWith("+") ? "text-green-500" : "text-amber-500"
+                        )}>
+                          {stat.change}
+                        </span>
+                        <span className="text-xs text-foreground/60 ml-1">vs. last week</span>
+                      </div>
+                    </GlassCard>
+                  </FadeIn>
                 ))}
               </div>
-              <div className="mt-6 pt-3 border-t border-border/40">
-                <Button variant="outline" className="w-full">
-                  View All Students
-                </Button>
-              </div>
-            </GlassCard>
-          </FadeIn>
+              
+              {/* Admin-only actions */}
+              <RoleBasedAccess allowedRoles={['admin']}>
+                <FadeIn>
+                  <GlassCard className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4">Administrator Actions</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <Button 
+                        className="w-full flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 transition-colors"
+                        onClick={handleAddTeacher}
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span>Add New Teacher</span>
+                      </Button>
+                      <Button 
+                        className="w-full flex items-center gap-2 bg-purple-600 hover:bg-purple-700 transition-colors"
+                        onClick={handleManageCourseAssignments}
+                      >
+                        <ClipboardList className="w-4 h-4" />
+                        <span>Manage Course Assignments</span>
+                      </Button>
+                      <Button 
+                        className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors"
+                        onClick={handleSystemSettings}
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>System Settings</span>
+                      </Button>
+                    </div>
+                  </GlassCard>
+                </FadeIn>
+              </RoleBasedAccess>
+              
+              {/* Recent students section */}
+              <FadeIn>
+                <GlassCard>
+                  <h2 className="text-xl font-semibold mb-4">Recent Attendance</h2>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {recentStudents.map((student) => (
+                      <StudentCard 
+                        key={student.id} 
+                        student={student}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-6 pt-3 border-t border-border/40">
+                    <Button variant="outline" className="w-full">
+                      View All Students
+                    </Button>
+                  </div>
+                </GlassCard>
+              </FadeIn>
+            </>
+          )}
         </main>
       </div>
     </div>

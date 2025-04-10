@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
-import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, Book, Users, ArrowRight, Download, Clock, FileText } from "lucide-react";
+import { Calendar as CalendarIcon, ChevronDown, Filter, Folder, Book, Users, ArrowRight, Download, Clock, FileText, Search } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -74,7 +73,6 @@ const classes = [
   }
 ];
 
-// Sample student data for the attendance history
 const sampleAttendanceHistory = [
   {
     date: new Date(2023, 8, 5),
@@ -112,6 +110,39 @@ const sampleAttendanceHistory = [
   }
 ];
 
+const sampleCourseAttendance = [
+  {
+    courseId: "1",
+    courseName: "Web Development",
+    attendanceRate: 92,
+    totalSessions: 15,
+    attended: 14,
+    absences: 1,
+    lateArrivals: 0,
+    excusedAbsences: 1
+  },
+  {
+    courseId: "2",
+    courseName: "Data Structures",
+    attendanceRate: 85,
+    totalSessions: 20,
+    attended: 17,
+    absences: 3,
+    lateArrivals: 2,
+    excusedAbsences: 1
+  },
+  {
+    courseId: "3",
+    courseName: "Mobile App Development",
+    attendanceRate: 78,
+    totalSessions: 18,
+    attended: 14,
+    absences: 4,
+    lateArrivals: 3,
+    excusedAbsences: 2
+  }
+];
+
 const Attendance: React.FC = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -123,6 +154,7 @@ const Attendance: React.FC = () => {
   const [selectedStudentName, setSelectedStudentName] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [activeTab, setActiveTab] = useState("sessions");
+  const [selectedCourseForHistory, setSelectedCourseForHistory] = useState<string | undefined>(undefined);
   
   const { toast } = useToast();
   const location = useLocation();
@@ -192,9 +224,10 @@ const Attendance: React.FC = () => {
     });
   };
   
-  const handleViewStudentHistory = () => {
+  const handleViewStudentHistory = (courseId?: string) => {
     setSelectedStudentName('John Smith');
     setSelectedStudentId('ST001');
+    setSelectedCourseForHistory(courseId);
     setShowStudentHistory(true);
   };
 
@@ -323,7 +356,7 @@ const Attendance: React.FC = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  onClick={handleViewStudentHistory}
+                  onClick={() => handleViewStudentHistory(selectedClass || undefined)}
                 >
                   View Student History
                 </Button>
@@ -481,7 +514,7 @@ const Attendance: React.FC = () => {
                     <div 
                       key={i} 
                       className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
-                      onClick={handleViewStudentHistory}
+                      onClick={() => handleViewStudentHistory(selectedClass || undefined)}
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
@@ -548,7 +581,6 @@ const Attendance: React.FC = () => {
         ) : null}
       </div>
       
-      {/* Deprivation Settings Dialog */}
       <Dialog open={showDeprivationSettings} onOpenChange={setShowDeprivationSettings}>
         <DialogContent className="sm:max-w-[800px]">
           <DialogHeader>
@@ -558,14 +590,21 @@ const Attendance: React.FC = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Student Attendance History Dialog */}
       <StudentAttendanceHistory 
         isOpen={showStudentHistory}
         onOpenChange={setShowStudentHistory}
         studentName={selectedStudentName}
         studentId={selectedStudentId}
-        attendanceRecords={sampleAttendanceHistory}
+        attendanceRecords={sampleAttendanceHistory.map(record => ({
+          ...record,
+          courseId: selectedCourseForHistory || (Math.floor(Math.random() * 3) + 1).toString(),
+          courseName: !selectedCourseForHistory ? 
+            ["Web Development", "Data Structures", "Mobile App Development"][Math.floor(Math.random() * 3)] :
+            classes.find(c => c.id === selectedCourseForHistory)?.name || "Unknown Course"
+        }))}
         overallAttendance={87}
+        courseAttendance={sampleCourseAttendance}
+        selectedCourseId={selectedCourseForHistory}
       />
     </div>
   );

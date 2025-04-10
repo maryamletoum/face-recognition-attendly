@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import {
   BookOpen,
   Calendar,
   ChevronDown,
+  Clock,
   Cloud,
   Users,
   User,
@@ -103,12 +103,10 @@ const Dashboard: React.FC = () => {
   
   const isStudent = () => userRole === 'student';
   
-  // Extract student ID from email for student users (format: student-{id})
   const studentId = userEmail?.startsWith('student-') 
     ? userEmail.replace('student-', '')
     : null;
   
-  // For student view, create personal info
   const studentInfo = {
     id: studentId || "0",
     name: `Student ${studentId || ""}`,
@@ -474,7 +472,7 @@ const Dashboard: React.FC = () => {
                       </thead>
                       <tbody>
                         {myCourses.map((course) => (
-                          <tr key={course.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
+                          <tr key={course.id} className="border-b border-border/20 hover:bg-secondary hover:text-foreground transition-colors">
                             <td className="py-3 px-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">

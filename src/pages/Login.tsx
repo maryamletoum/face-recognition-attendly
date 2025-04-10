@@ -11,6 +11,7 @@ import GlassCard from '@/components/ui/GlassCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { toast } from '@/hooks/use-toast';
+import StudentLogin from '@/components/StudentLogin';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -60,6 +61,18 @@ const Login: React.FC = () => {
     }, 1500);
   };
 
+  const handleStudentLogin = (studentId: string, password: string) => {
+    // Store student role information for authorization in the app
+    localStorage.setItem('userRole', 'student');
+    localStorage.setItem('userEmail', `student-${studentId}`);
+    
+    toast({
+      title: "Student login successful",
+      description: "Welcome to your student portal",
+    });
+    window.location.href = '/dashboard';
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -103,9 +116,10 @@ const Login: React.FC = () => {
             <FadeIn direction="right" delay={100}>
               <GlassCard className="max-w-md mx-auto">
                 <Tabs defaultValue="login" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-4">
-                    <TabsTrigger value="login">Login</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3 mb-4">
+                    <TabsTrigger value="login">Staff Login</TabsTrigger>
+                    <TabsTrigger value="signup">Staff Signup</TabsTrigger>
+                    <TabsTrigger value="student">Student Login</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="login">
@@ -237,6 +251,10 @@ const Login: React.FC = () => {
                         .
                       </p>
                     </form>
+                  </TabsContent>
+                  
+                  <TabsContent value="student">
+                    <StudentLogin onLogin={handleStudentLogin} />
                   </TabsContent>
                 </Tabs>
               </GlassCard>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -160,9 +159,19 @@ const Attendance: React.FC = () => {
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const { userRole } = useAuth();
+  const { userRole, isStudent } = useAuth();
   
   useEffect(() => {
+    if (isStudent() && location.search.includes('action=take')) {
+      navigate('/attendance');
+      toast({
+        title: "Access Denied",
+        description: "Students cannot take attendance. This requires special hardware.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     const queryParams = new URLSearchParams(location.search);
     const courseId = queryParams.get('course');
     const action = queryParams.get('action');
@@ -170,11 +179,11 @@ const Attendance: React.FC = () => {
     if (courseId) {
       setSelectedClass(courseId);
       
-      if (action === 'take') {
+      if (action === 'take' && !isStudent()) {
         setIsTakingAttendance(true);
       }
     }
-  }, [location.search]);
+  }, [location.search, navigate, isStudent, toast]);
 
   const handleExportSessions = () => {
     if (!selectedClass) return;
@@ -309,7 +318,7 @@ const Attendance: React.FC = () => {
           )}
         </div>
 
-        {isTakingAttendance && (
+        {isTakingAttendance && !isStudent() && (
           <FadeIn>
             <GlassCard className="mb-6">
               <div className="flex justify-between items-center mb-6">
@@ -407,13 +416,24 @@ const Attendance: React.FC = () => {
                     </div>
                     
                     <div className="mt-4 pt-4 border-t border-border">
-                      <Button 
-                        className="w-full shadow-sm hover:shadow-md transition-shadow"
-                        onClick={() => setSelectedClass(classItem.id)}
-                      >
-                        <Clock className="w-4 h-4 mr-2" />
-                        Take Attendance Now
-                      </Button>
+                      {isStudent() ? (
+                        <Button 
+                          className="w-full shadow-sm hover:shadow-md transition-shadow"
+                          onClick={() => setSelectedClass(classItem.id)}
+                          variant="outline"
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Attendance Records
+                        </Button>
+                      ) : (
+                        <Button 
+                          className="w-full shadow-sm hover:shadow-md transition-shadow"
+                          onClick={() => setSelectedClass(classItem.id)}
+                        >
+                          <Clock className="w-4 h-4 mr-2" />
+                          Take Attendance Now
+                        </Button>
+                      )}
                     </div>
                   </GlassCard>
                 ))}
@@ -431,14 +451,16 @@ const Attendance: React.FC = () => {
                 Back to Classes
               </Button>
               <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  className="shadow-sm hover:shadow-md transition-shadow"
-                  onClick={handleExportSessions}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Sessions
-                </Button>
+                {!isStudent() && (
+                  <Button 
+                    variant="outline" 
+                    className="shadow-sm hover:shadow-md transition-shadow"
+                    onClick={handleExportSessions}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Sessions
+                  </Button>
+                )}
               </div>
             </div>
             
@@ -551,14 +573,16 @@ const Attendance: React.FC = () => {
               >
                 Back to Sessions
               </Button>
-              <Button 
-                variant="outline"
-                className="shadow-sm hover:shadow-md transition-shadow"
-                onClick={handleExportCsv}
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
-              </Button>
+              {!isStudent() && (
+                <Button 
+                  variant="outline"
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                  onClick={handleExportCsv}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+              )}
             </div>
             
             <GlassCard>

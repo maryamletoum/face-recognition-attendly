@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -410,8 +411,8 @@ const Attendance: React.FC = () => {
                         className="w-full shadow-sm hover:shadow-md transition-shadow"
                         onClick={() => setSelectedClass(classItem.id)}
                       >
-                        <Users className="w-4 h-4 mr-2" />
-                        View Sessions
+                        <Clock className="w-4 h-4 mr-2" />
+                        Take Attendance Now
                       </Button>
                     </div>
                   </GlassCard>

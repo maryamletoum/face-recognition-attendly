@@ -217,15 +217,17 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
         )}
       </GlassCard>
       
-      <StudentAttendanceHistory 
-        isOpen={showAttendanceHistory}
-        onOpenChange={setShowAttendanceHistory}
-        studentName={`Student ${studentId}`}
-        studentId={studentId}
-        attendanceRecords={sampleAttendanceHistory}
-        overallAttendance={85}
-        courseAttendance={sampleCourseAttendance}
-      />
+      {showAttendanceHistory && (
+        <StudentAttendanceHistory 
+          isOpen={showAttendanceHistory}
+          onOpenChange={setShowAttendanceHistory}
+          studentName={`Student ${studentId}`}
+          studentId={studentId}
+          attendanceRecords={sampleAttendanceHistory}
+          overallAttendance={85}
+          courseAttendance={sampleCourseAttendance}
+        />
+      )}
     </>
   );
 };

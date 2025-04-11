@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
@@ -8,8 +7,9 @@ import FadeIn from '@/components/animations/FadeIn';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 import BackButton from '@/components/BackButton';
+import { useAuth } from '@/contexts/AuthContext';
+import RoleBasedAccess from '@/components/RoleBasedAccess';
 
-// Mock course data - in a real application, this would come from an API
 const courses = [
   {
     id: "1",
@@ -70,9 +70,9 @@ const CourseDetails: React.FC = () => {
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { isStudent } = useAuth();
 
   useEffect(() => {
-    // Simulating API call to fetch course details
     setLoading(true);
     setTimeout(() => {
       const foundCourse = courses.find(c => c.id === courseId);
@@ -87,7 +87,6 @@ const CourseDetails: React.FC = () => {
       description: "Students can now check in for today's class.",
     });
     
-    // Navigate to the attendance page with course ID as query parameter
     navigate(`/attendance?course=${courseId}&action=take`);
   };
 
@@ -142,7 +141,9 @@ const CourseDetails: React.FC = () => {
                     <h1 className="text-2xl font-bold mt-2 mb-1">{course.title}</h1>
                     <p className="text-foreground/70">{course.instructor}</p>
                   </div>
-                  <Button onClick={handleTakeAttendance}>Take Attendance</Button>
+                  <RoleBasedAccess allowedRoles={['admin', 'teacher']}>
+                    <Button onClick={handleTakeAttendance}>Take Attendance</Button>
+                  </RoleBasedAccess>
                 </div>
                 
                 <p className="mb-6">{course.description}</p>
@@ -197,9 +198,18 @@ const CourseDetails: React.FC = () => {
                       <div className="text-sm text-foreground/70">Average Attendance</div>
                       <div className="font-medium">{course.attendance}%</div>
                     </div>
-                    <Link to={`/attendance?course=${courseId}`}>
-                      <Button variant="outline">View Attendance Records</Button>
-                    </Link>
+                    <RoleBasedAccess 
+                      allowedRoles={['admin', 'teacher']}
+                      fallback={
+                        <Button variant="outline" onClick={() => navigate(`/attendance?course=${courseId}`)}>
+                          View My Attendance
+                        </Button>
+                      }
+                    >
+                      <Link to={`/attendance?course=${courseId}`}>
+                        <Button variant="outline">View Attendance Records</Button>
+                      </Link>
+                    </RoleBasedAccess>
                   </div>
                 </div>
               </GlassCard>
@@ -208,27 +218,29 @@ const CourseDetails: React.FC = () => {
           
           <div>
             <FadeIn delay={100}>
-              <GlassCard>
-                <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to={`/students?course=${courseId}`}>
-                      <Users className="w-4 h-4 mr-2" />
-                      View Students
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" onClick={handleTakeAttendance}>
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    Take Attendance
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" asChild>
-                    <Link to="/dashboard">
-                      <Clock className="w-4 h-4 mr-2" />
-                      View Analytics
-                    </Link>
-                  </Button>
-                </div>
-              </GlassCard>
+              <RoleBasedAccess allowedRoles={['admin', 'teacher']}>
+                <GlassCard>
+                  <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+                  <div className="space-y-2">
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <Link to={`/students?course=${courseId}`}>
+                        <Users className="w-4 h-4 mr-2" />
+                        View Students
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" onClick={handleTakeAttendance}>
+                      <CalendarIcon className="w-4 h-4 mr-2" />
+                      Take Attendance
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <Link to="/dashboard">
+                        <Clock className="w-4 h-4 mr-2" />
+                        View Analytics
+                      </Link>
+                    </Button>
+                  </div>
+                </GlassCard>
+              </RoleBasedAccess>
             </FadeIn>
             
             <FadeIn delay={200}>

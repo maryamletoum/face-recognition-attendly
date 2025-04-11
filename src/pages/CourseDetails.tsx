@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
@@ -88,6 +89,10 @@ const CourseDetails: React.FC = () => {
     });
     
     navigate(`/attendance?course=${courseId}&action=take`);
+  };
+
+  const handleViewAttendance = () => {
+    navigate(`/attendance?course=${courseId}`);
   };
 
   if (loading) {
@@ -201,14 +206,14 @@ const CourseDetails: React.FC = () => {
                     <RoleBasedAccess 
                       allowedRoles={['admin', 'teacher']}
                       fallback={
-                        <Button variant="outline" onClick={() => navigate(`/attendance?course=${courseId}`)}>
+                        <Button variant="outline" onClick={handleViewAttendance}>
                           View My Attendance
                         </Button>
                       }
                     >
-                      <Link to={`/attendance?course=${courseId}`}>
-                        <Button variant="outline">View Attendance Records</Button>
-                      </Link>
+                      <Button variant="outline" onClick={handleViewAttendance}>
+                        View Attendance Records
+                      </Button>
                     </RoleBasedAccess>
                   </div>
                 </div>

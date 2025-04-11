@@ -106,7 +106,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
             </div>
           </div>
           
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="all" className="flex items-center gap-2">
                 <History className="w-4 h-4" />

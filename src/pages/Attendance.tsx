@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import AttendanceTable from '@/components/AttendanceTable';
 import BackButton from '@/components/BackButton';
 import { exportToExcel } from '@/utils/excelExport';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import FaceRecognition from '@/components/FaceRecognition';
 import DeprivationSettings from '@/components/DeprivationSettings';
 import { useAuth } from '@/contexts/AuthContext';
@@ -474,93 +474,93 @@ const Attendance: React.FC = () => {
                     <TabsTrigger value="sessions">Sessions</TabsTrigger>
                     <TabsTrigger value="students">Students</TabsTrigger>
                   </TabsList>
-                </Tabs>
-              </div>
-              
-              <TabsContent value="sessions" className="mt-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border/40">
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
-                        <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
-                        <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
-                          <td className="py-3 px-4">Session #{session.id}</td>
-                          <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
-                          <td className="py-3 px-4">{session.time}</td>
-                          <td className="py-3 px-4">
-                            <div className={cn(
-                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                              session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
-                              session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
-                              "bg-red-500/10 text-red-500 border-red-200"
-                            )}>
-                              {session.attendance}%
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => setSelectedSession(session.id)}
-                            >
-                              View Details
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="students" className="mt-0">
-                <div className="mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
-                    <input
-                      type="text"
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-border glass"
-                      placeholder="Search students..."
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-3">
-                  {[...Array(5)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
-                      onClick={() => handleViewStudentHistory(selectedClass || undefined)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                          {String.fromCharCode(65 + i)}
-                        </div>
-                        <div>
-                          <p className="font-medium">Student {i + 1}</p>
-                          <p className="text-sm text-foreground/70">ID: ST00{i + 1}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={cn(
-                          "font-medium",
-                          Math.random() > 0.3 ? "text-green-500" : "text-amber-500"
-                        )}>
-                          {Math.floor(85 + Math.random() * 15)}%
-                        </div>
-                        <p className="text-xs text-foreground/60">Attendance Rate</p>
+                
+                  <TabsContent value="sessions" className="mt-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-border/40">
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
+                            <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
+                            <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
+                              <td className="py-3 px-4">Session #{session.id}</td>
+                              <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
+                              <td className="py-3 px-4">{session.time}</td>
+                              <td className="py-3 px-4">
+                                <div className={cn(
+                                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                                  session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
+                                  session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
+                                  "bg-red-500/10 text-red-500 border-red-200"
+                                )}>
+                                  {session.attendance}%
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => setSelectedSession(session.id)}
+                                >
+                                  View Details
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="students" className="mt-0">
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
+                        <input
+                          type="text"
+                          className="w-full pl-10 pr-4 py-2 rounded-lg border border-border glass"
+                          placeholder="Search students..."
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </TabsContent>
+                    <div className="grid gap-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
+                          onClick={() => handleViewStudentHistory(selectedClass || undefined)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                              {String.fromCharCode(65 + i)}
+                            </div>
+                            <div>
+                              <p className="font-medium">Student {i + 1}</p>
+                              <p className="text-sm text-foreground/70">ID: ST00{i + 1}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn(
+                              "font-medium",
+                              Math.random() > 0.3 ? "text-green-500" : "text-amber-500"
+                            )}>
+                              {Math.floor(85 + Math.random() * 15)}%
+                            </div>
+                            <p className="text-xs text-foreground/60">Attendance Rate</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </GlassCard>
           </FadeIn>
         ) : !isTakingAttendance && selectedSession ? (

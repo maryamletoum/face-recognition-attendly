@@ -19,6 +19,7 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAttendanceHistory, setShowAttendanceHistory] = useState(false);
+  const [loginError, setLoginError] = useState('');
   const { toast } = useToast();
 
   // Sample data for the attendance history
@@ -100,6 +101,7 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setLoginError('');
     
     // Simulate login process
     setTimeout(() => {
@@ -113,6 +115,7 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
           description: "Welcome back to the student portal",
         });
       } else {
+        setLoginError('Please enter both student ID and password');
         toast({
           title: "Login failed",
           description: "Please check your student ID and password",
@@ -143,7 +146,11 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
             
             <Button 
               variant="outline"
-              onClick={() => setIsLoggedIn(false)}
+              onClick={() => {
+                setIsLoggedIn(false);
+                setStudentId('');
+                setPassword('');
+              }}
               className="w-full"
             >
               Sign Out
@@ -160,6 +167,12 @@ const StudentLogin: React.FC<StudentLoginProps> = ({ onLogin, className }) => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              {loginError && (
+                <div className="p-3 text-sm rounded-md bg-red-100 text-red-600 mb-4">
+                  {loginError}
+                </div>
+              )}
+              
               <div className="space-y-2">
                 <Label htmlFor="studentId">Student ID</Label>
                 <div className="relative">

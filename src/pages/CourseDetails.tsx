@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { CalendarIcon, Clock, MapPin, Users } from 'lucide-react';
+import { CalendarIcon, Clock, MapPin, Users, FileText, Eye, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
 import FadeIn from '@/components/animations/FadeIn';
@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import BackButton from '@/components/BackButton';
 import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedAccess from '@/components/RoleBasedAccess';
+import StudentAttendanceHistory from '@/components/StudentAttendanceHistory';
 
 const courses = [
   {
@@ -90,8 +91,9 @@ const CourseDetails: React.FC = () => {
   const { id: courseId } = useParams();
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showStudentHistory, setShowStudentHistory] = useState(false);
   const navigate = useNavigate();
-  const { isStudent } = useAuth();
+  const { isStudent, isTeacher, isAdmin } = useAuth();
 
   useEffect(() => {
     setLoading(true);
@@ -114,6 +116,10 @@ const CourseDetails: React.FC = () => {
   const handleViewAttendance = () => {
     navigate(`/attendance?course=${courseId}`);
   };
+  
+  const handleViewStudentHistory = () => {
+    setShowStudentHistory(true);
+  };
 
   const getStatusColorClass = (status: string) => {
     switch (status) {
@@ -127,6 +133,53 @@ const CourseDetails: React.FC = () => {
         return 'bg-gray-500/10 text-gray-500 border-gray-200';
     }
   };
+  
+  // Sample data for the student attendance history
+  const sampleAttendanceHistory = [
+    {
+      date: new Date(2023, 8, 5),
+      status: 'present' as const,
+      excused: false,
+      courseId: courseId || "",
+      courseName: course?.title || ""
+    },
+    {
+      date: new Date(2023, 8, 12),
+      status: 'absent' as const,
+      excused: true,
+      excuseType: 'medical' as const,
+      notes: 'Doctor appointment',
+      courseId: courseId || "",
+      courseName: course?.title || ""
+    },
+    {
+      date: new Date(2023, 8, 19),
+      status: 'late' as const,
+      excused: false,
+      courseId: courseId || "",
+      courseName: course?.title || ""
+    },
+    {
+      date: new Date(2023, 9, 3),
+      status: 'absent' as const,
+      excused: false,
+      courseId: courseId || "",
+      courseName: course?.title || ""
+    }
+  ];
+
+  const sampleCourseAttendance = [
+    {
+      courseId: courseId || "",
+      courseName: course?.title || "",
+      attendanceRate: 85,
+      totalSessions: 12,
+      attended: 10,
+      absences: 2,
+      lateArrivals: 1,
+      excusedAbsences: 1
+    }
+  ];
 
   if (loading) {
     return (
@@ -239,12 +292,14 @@ const CourseDetails: React.FC = () => {
                     <RoleBasedAccess 
                       allowedRoles={['admin', 'teacher']}
                       fallback={
-                        <Button variant="outline" onClick={handleViewAttendance}>
+                        <Button variant="outline" onClick={handleViewStudentHistory}>
+                          <Eye className="w-4 h-4 mr-2" />
                           View My Attendance
                         </Button>
                       }
                     >
                       <Button variant="outline" onClick={handleViewAttendance}>
+                        <FileText className="w-4 h-4 mr-2" />
                         View Attendance Records
                       </Button>
                     </RoleBasedAccess>
@@ -276,6 +331,14 @@ const CourseDetails: React.FC = () => {
                         View Analytics
                       </Link>
                     </Button>
+                    {isAdmin() && (
+                      <Button variant="outline" className="w-full justify-start" asChild>
+                        <Link to={`/attendance?course=${courseId}&settings=true`}>
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          Deprivation Settings
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </GlassCard>
               </RoleBasedAccess>
@@ -304,6 +367,17 @@ const CourseDetails: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      <StudentAttendanceHistory 
+        isOpen={showStudentHistory}
+        onOpenChange={setShowStudentHistory}
+        studentName={isStudent() ? "John Smith" : "Student Name"}
+        studentId={isStudent() ? "ST001" : "ST001"}
+        attendanceRecords={sampleAttendanceHistory}
+        overallAttendance={85}
+        courseAttendance={sampleCourseAttendance}
+        selectedCourseId={courseId}
+      />
     </div>
   );
 };

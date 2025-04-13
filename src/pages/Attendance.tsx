@@ -14,9 +14,13 @@ import { useToast } from "@/hooks/use-toast";
 import FaceRecognition from '@/components/FaceRecognition';
 import DeprivationSettings from '@/components/DeprivationSettings';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import StudentAttendanceHistory from '@/components/StudentAttendanceHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AttendanceSearch from '@/components/AttendanceSearch';
+import AttendanceExcuseForm from '@/components/AttendanceExcuseForm';
+import DeprivationNotification from '@/components/DeprivationNotification';
+import AdminDeprivationSettings from '@/components/AdminDeprivationSettings';
 
 const classes = [
   {
@@ -150,16 +154,28 @@ const Attendance: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [isTakingAttendance, setIsTakingAttendance] = useState(false);
   const [showDeprivationSettings, setShowDeprivationSettings] = useState(false);
+  const [showAdminDeprivationSettings, setShowAdminDeprivationSettings] = useState(false);
   const [showStudentHistory, setShowStudentHistory] = useState(false);
+  const [showExcuseForm, setShowExcuseForm] = useState(false);
+  const [showDeprivationNotification, setShowDeprivationNotification] = useState(false);
   const [selectedStudentName, setSelectedStudentName] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [activeTab, setActiveTab] = useState("sessions");
   const [selectedCourseForHistory, setSelectedCourseForHistory] = useState<string | undefined>(undefined);
+  const [searchFilters, setSearchFilters] = useState({ studentName: '', date: undefined as Date | undefined });
+  const [selectedStudentForExcuse, setSelectedStudentForExcuse] = useState({ name: '', id: '', date: new Date() });
+  const [deprivationStudent, setDeprivationStudent] = useState({
+    id: '',
+    name: '',
+    absenceRate: 0,
+    courseId: '',
+    courseName: ''
+  });
   
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const { userRole, isStudent } = useAuth();
+  const { userRole, isStudent, isAdmin, isTeacher } = useAuth();
   
   useEffect(() => {
     if (isStudent() && location.search.includes('action=take')) {
@@ -175,6 +191,7 @@ const Attendance: React.FC = () => {
     const queryParams = new URLSearchParams(location.search);
     const courseId = queryParams.get('course');
     const action = queryParams.get('action');
+    const settings = queryParams.get('settings');
     
     if (courseId) {
       setSelectedClass(courseId);
@@ -183,7 +200,11 @@ const Attendance: React.FC = () => {
         setIsTakingAttendance(true);
       }
     }
-  }, [location.search, navigate, isStudent, toast]);
+    
+    if (settings === 'true' && isAdmin()) {
+      setShowAdminDeprivationSettings(true);
+    }
+  }, [location.search, navigate, isStudent, toast, isAdmin]);
 
   const handleExportSessions = () => {
     if (!selectedClass) return;
@@ -240,6 +261,42 @@ const Attendance: React.FC = () => {
     setSelectedCourseForHistory(courseId);
     setShowStudentHistory(true);
   };
+  
+  const handleOpenExcuseForm = (studentId: string, studentName: string) => {
+    setSelectedStudentForExcuse({
+      id: studentId,
+      name: studentName,
+      date: new Date()
+    });
+    setShowExcuseForm(true);
+  };
+  
+  const handleSubmitExcuse = (data: { excuseType: string; notes: string }) => {
+    toast({
+      title: "Excuse submitted",
+      description: `Excuse has been recorded for ${selectedStudentForExcuse.name}.`,
+    });
+    setShowExcuseForm(false);
+  };
+  
+  const handleSearch = (params: { studentName: string; date: Date | undefined }) => {
+    setSearchFilters(params);
+    toast({
+      title: "Search applied",
+      description: `Showing results for ${params.studentName || 'all students'}${params.date ? ' on ' + format(params.date, "MMMM d, yyyy") : ''}.`,
+    });
+  };
+  
+  const handleShowDeprivationNotification = () => {
+    setDeprivationStudent({
+      id: 'ST003',
+      name: 'James Wilson',
+      absenceRate: 18,
+      courseId: selectedClass || '1',
+      courseName: selectedClass ? classes.find(c => c.id === selectedClass)?.name || '' : 'Web Development'
+    });
+    setShowDeprivationNotification(true);
+  };
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background to-secondary/20">
@@ -278,7 +335,17 @@ const Attendance: React.FC = () => {
               </div>
             )}
             <BackButton className="shadow-sm hover:shadow-md transition-shadow" />
-            {userRole === 'admin' && !isTakingAttendance && (
+            {isAdmin() && !isTakingAttendance && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAdminDeprivationSettings(true)}
+                className="shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            )}
+            {isTeacher() && !isAdmin() && !isTakingAttendance && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowDeprivationSettings(true)}
@@ -318,6 +385,10 @@ const Attendance: React.FC = () => {
           )}
         </div>
 
+        {!isTakingAttendance && selectedClass && !selectedSession && (
+          <AttendanceSearch onSearch={handleSearch} />
+        )}
+
         {isTakingAttendance && !isStudent() && (
           <FadeIn>
             <GlassCard className="mb-6">
@@ -328,9 +399,17 @@ const Attendance: React.FC = () => {
                     {format(new Date(), "EEEE, MMMM d • h:mm a")} | {classes.find(c => c.id === selectedClass)?.name}
                   </p>
                 </div>
-                <Button onClick={handleFinishAttendance} variant="outline">
-                  End Session
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={handleShowDeprivationNotification}
+                  >
+                    View Deprivations
+                  </Button>
+                  <Button onClick={handleFinishAttendance} variant="outline">
+                    End Session
+                  </Button>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -356,6 +435,7 @@ const Attendance: React.FC = () => {
                 date={new Date()}
                 courseId={selectedClass || ""}
                 isSessionActive={true}
+                onAddExcuse={handleOpenExcuseForm}
               />
               
               <div className="mt-6 text-sm text-foreground/70 border-t border-border/30 pt-4 flex justify-between items-center">
@@ -475,7 +555,7 @@ const Attendance: React.FC = () => {
                     <TabsTrigger value="students">Students</TabsTrigger>
                   </TabsList>
                 
-                  <TabsContent value="sessions" className="mt-0">
+                  <TabsContent value="sessions" className="mt-4">
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -519,7 +599,7 @@ const Attendance: React.FC = () => {
                     </div>
                   </TabsContent>
                   
-                  <TabsContent value="students" className="mt-0">
+                  <TabsContent value="students" className="mt-4">
                     <div className="mb-4">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
@@ -600,6 +680,7 @@ const Attendance: React.FC = () => {
                 date={classes.find(c => c.id === selectedClass)?.sessions.find(s => s.id === selectedSession)?.date || new Date()}
                 courseId={selectedClass || ""}
                 isSessionActive={false}
+                onAddExcuse={handleOpenExcuseForm}
               />
             </GlassCard>
           </FadeIn>
@@ -612,6 +693,15 @@ const Attendance: React.FC = () => {
             <DialogTitle>Attendance & Deprivation Settings</DialogTitle>
           </DialogHeader>
           <DeprivationSettings />
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showAdminDeprivationSettings} onOpenChange={setShowAdminDeprivationSettings}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Attendance & Deprivation Settings (Admin)</DialogTitle>
+          </DialogHeader>
+          <AdminDeprivationSettings />
         </DialogContent>
       </Dialog>
       
@@ -630,6 +720,27 @@ const Attendance: React.FC = () => {
         overallAttendance={87}
         courseAttendance={sampleCourseAttendance}
         selectedCourseId={selectedCourseForHistory}
+      />
+      
+      <Dialog open={showExcuseForm} onOpenChange={setShowExcuseForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Attendance Excuse</DialogTitle>
+          </DialogHeader>
+          <AttendanceExcuseForm
+            studentName={selectedStudentForExcuse.name}
+            studentId={selectedStudentForExcuse.id}
+            date={selectedStudentForExcuse.date}
+            onSubmit={handleSubmitExcuse}
+            onCancel={() => setShowExcuseForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      <DeprivationNotification 
+        isOpen={showDeprivationNotification}
+        onOpenChange={setShowDeprivationNotification}
+        student={deprivationStudent}
       />
     </div>
   );

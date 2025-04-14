@@ -38,13 +38,13 @@ const CourseManagement: React.FC<CourseManagementProps> = ({ className }) => {
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'archived'>('all');
   
-  // Form state
+  // Form state - Fixed type issue by changing 'pending' to 'active' | 'pending' | 'archived'
   const [formData, setFormData] = useState({
     name: '',
     code: '',
     instructor: '',
     room: '',
-    status: 'pending' as const
+    status: 'pending' as 'active' | 'pending' | 'archived'
   });
 
   const [selectedTeacher, setSelectedTeacher] = useState('');

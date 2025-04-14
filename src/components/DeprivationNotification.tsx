@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNotifications } from '@/hooks/use-notifications';
 
 type DeprivationNotificationProps = {
   isOpen: boolean;
@@ -25,20 +27,50 @@ const DeprivationNotification: React.FC<DeprivationNotificationProps> = ({
 }) => {
   const [notes, setNotes] = useState('');
   const { toast } = useToast();
+  const { isTeacher } = useAuth();
+  const { addNotification } = useNotifications();
 
   const handleConfirm = () => {
-    toast({
-      title: "Deprivation confirmed",
-      description: `${student.name} will be notified of their deprivation status.`,
-    });
+    if (isTeacher()) {
+      toast({
+        title: "Deprivation confirmed",
+        description: `${student.name} has been officially deprived from ${student.courseName}.`,
+      });
+      
+      // Add notification about the confirmed deprivation
+      addNotification(
+        "Student Deprivation Confirmed", 
+        `${student.name} has been officially deprived from ${student.courseName}.`
+      );
+    } else {
+      toast({
+        title: "Deprivation notification sent",
+        description: `${student.name} will be notified of their deprivation status.`,
+      });
+    }
+    
     onOpenChange(false);
   };
   
   const handleReject = () => {
-    toast({
-      title: "Deprivation rejected",
-      description: `${student.name} will not be deprived from the course.`,
-    });
+    if (isTeacher()) {
+      toast({
+        title: "Deprivation rejected",
+        description: `${student.name} will remain enrolled in ${student.courseName}.`,
+      });
+      
+      // Add notification about the rejected deprivation
+      addNotification(
+        "Student Deprivation Rejected", 
+        `${student.name} will remain enrolled in ${student.courseName}.`
+      );
+    } else {
+      toast({
+        title: "Deprivation canceled",
+        description: `${student.name} will not be deprived from the course.`,
+      });
+    }
+    
     onOpenChange(false);
   };
 
@@ -84,11 +116,11 @@ const DeprivationNotification: React.FC<DeprivationNotificationProps> = ({
           <div className="flex justify-between w-full">
             <Button variant="outline" onClick={handleReject}>
               <X className="w-4 h-4 mr-2" />
-              Reject Deprivation
+              {isTeacher() ? "Reject Deprivation" : "Cancel Deprivation"}
             </Button>
             <Button onClick={handleConfirm}>
               <Check className="w-4 h-4 mr-2" />
-              Confirm Deprivation
+              {isTeacher() ? "Confirm Deprivation" : "Send Notification"}
             </Button>
           </div>
         </DialogFooter>

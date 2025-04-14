@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users, FileText, Eye, AlertTriangle } from 'lucide-react';
@@ -84,6 +85,54 @@ const courses = [
       { id: "2", date: new Date(2023, 9, 16), time: "11:00 AM", status: "late" },
       { id: "3", date: new Date(2023, 9, 18), time: "11:00 AM", status: "absent" },
     ]
+  }
+];
+
+// Sample data for the student attendance history
+const sampleAttendanceHistory = [
+  {
+    date: new Date(2023, 8, 5),
+    status: 'present' as const,
+    excused: false,
+    courseId: "1",
+    courseName: "Web Development"
+  },
+  {
+    date: new Date(2023, 8, 12),
+    status: 'absent' as const,
+    excused: true,
+    excuseType: 'medical' as const,
+    notes: 'Doctor appointment',
+    courseId: "1",
+    courseName: "Web Development"
+  },
+  {
+    date: new Date(2023, 8, 19),
+    status: 'late' as const,
+    excused: false,
+    courseId: "1",
+    courseName: "Web Development"
+  },
+  {
+    date: new Date(2023, 9, 3),
+    status: 'absent' as const,
+    excused: false,
+    courseId: "1",
+    courseName: "Web Development"
+  }
+];
+
+// Sample course attendance data
+const sampleCourseAttendance = [
+  {
+    courseId: "1",
+    courseName: "Web Development",
+    attendanceRate: 85,
+    totalSessions: 12,
+    attended: 10,
+    absences: 2,
+    lateArrivals: 1,
+    excusedAbsences: 1
   }
 ];
 

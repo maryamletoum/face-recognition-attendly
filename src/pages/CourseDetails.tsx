@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users, FileText, Eye, AlertTriangle } from 'lucide-react';
@@ -11,6 +10,7 @@ import BackButton from '@/components/BackButton';
 import { useAuth } from '@/contexts/AuthContext';
 import RoleBasedAccess from '@/components/RoleBasedAccess';
 import StudentAttendanceHistory from '@/components/StudentAttendanceHistory';
+import DeprivationNotification from '@/components/DeprivationNotification';
 
 const courses = [
   {
@@ -92,6 +92,8 @@ const CourseDetails: React.FC = () => {
   const [course, setCourse] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showStudentHistory, setShowStudentHistory] = useState(false);
+  const [showDeprivation, setShowDeprivation] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const navigate = useNavigate();
   const { isStudent, isTeacher, isAdmin } = useAuth();
 
@@ -121,6 +123,19 @@ const CourseDetails: React.FC = () => {
     setShowStudentHistory(true);
   };
 
+  const getStatusPercentage = (status: string) => {
+    switch (status) {
+      case 'present':
+        return "100%";
+      case 'absent':
+        return "0%";
+      case 'late':
+        return "50%";
+      default:
+        return "0%";
+    }
+  };
+  
   const getStatusColorClass = (status: string) => {
     switch (status) {
       case 'present':
@@ -133,53 +148,6 @@ const CourseDetails: React.FC = () => {
         return 'bg-gray-500/10 text-gray-500 border-gray-200';
     }
   };
-  
-  // Sample data for the student attendance history
-  const sampleAttendanceHistory = [
-    {
-      date: new Date(2023, 8, 5),
-      status: 'present' as const,
-      excused: false,
-      courseId: courseId || "",
-      courseName: course?.title || ""
-    },
-    {
-      date: new Date(2023, 8, 12),
-      status: 'absent' as const,
-      excused: true,
-      excuseType: 'medical' as const,
-      notes: 'Doctor appointment',
-      courseId: courseId || "",
-      courseName: course?.title || ""
-    },
-    {
-      date: new Date(2023, 8, 19),
-      status: 'late' as const,
-      excused: false,
-      courseId: courseId || "",
-      courseName: course?.title || ""
-    },
-    {
-      date: new Date(2023, 9, 3),
-      status: 'absent' as const,
-      excused: false,
-      courseId: courseId || "",
-      courseName: course?.title || ""
-    }
-  ];
-
-  const sampleCourseAttendance = [
-    {
-      courseId: courseId || "",
-      courseName: course?.title || "",
-      attendanceRate: 85,
-      totalSessions: 12,
-      attended: 10,
-      absences: 2,
-      lateArrivals: 1,
-      excusedAbsences: 1
-    }
-  ];
 
   if (loading) {
     return (
@@ -347,7 +315,7 @@ const CourseDetails: React.FC = () => {
             <FadeIn delay={200}>
               <GlassCard className="mt-6">
                 <h2 className="text-lg font-semibold mb-4">Recent Sessions</h2>
-                {course.sessions && course.sessions.map((session: any) => (
+                {course?.sessions && course.sessions.map((session: any) => (
                   <div key={session.id} className="mb-3 pb-3 border-b border-border/30 last:border-0 last:mb-0 last:pb-0">
                     <div className="flex justify-between items-start">
                       <div>
@@ -357,7 +325,7 @@ const CourseDetails: React.FC = () => {
                         </p>
                       </div>
                       <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColorClass(session.status)}`}>
-                        {session.status.charAt(0).toUpperCase() + session.status.slice(1)}
+                        {getStatusPercentage(session.status)}
                       </div>
                     </div>
                   </div>
@@ -378,6 +346,14 @@ const CourseDetails: React.FC = () => {
         courseAttendance={sampleCourseAttendance}
         selectedCourseId={courseId}
       />
+      
+      {selectedStudent && (
+        <DeprivationNotification
+          isOpen={showDeprivation}
+          onOpenChange={setShowDeprivation}
+          student={selectedStudent}
+        />
+      )}
     </div>
   );
 };

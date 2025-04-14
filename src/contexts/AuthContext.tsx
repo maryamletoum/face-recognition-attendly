@@ -1,114 +1,85 @@
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
 
-interface AuthContextType {
-  isAuthenticated: boolean;
-  userRole: string | null;
-  userEmail: string | null;
-  userName: string | null;
-  login: (email: string, password: string, role: string) => void;
+type UserRole = 'admin' | 'teacher' | 'student' | null;
+
+type AuthContextType = {
+  isLoggedIn: boolean;
+  userRole: UserRole;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAdmin: () => boolean;
   isTeacher: () => boolean;
   isStudent: () => boolean;
-}
+};
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  isLoggedIn: false,
+  userRole: null,
+  login: async () => false,
+  logout: () => {},
+  isAdmin: () => false,
+  isTeacher: () => false,
+  isStudent: () => false
+});
 
-export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const navigate = useNavigate();
+export const useAuth = () => useContext(AuthContext);
 
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const storedRole = localStorage.getItem('userRole');
-    const storedEmail = localStorage.getItem('userEmail');
-    const storedName = localStorage.getItem('userName');
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>(null);
+  const { toast } = useToast();
+  
+  // In a real app, this would verify credentials against a backend
+  const login = async (username: string, password: string): Promise<boolean> => {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
-    if (storedRole && storedEmail) {
-      setIsAuthenticated(true);
-      setUserRole(storedRole);
-      setUserEmail(storedEmail);
-      setUserName(storedName);
+    // Simple role assignment based on username prefix for demo
+    if (username.startsWith('admin') && password) {
+      setUserRole('admin');
+      setIsLoggedIn(true);
+      return true;
+    } else if (username.startsWith('teacher') && password) {
+      setUserRole('teacher');
+      setIsLoggedIn(true);
+      return true;
+    } else if (password) {
+      setUserRole('student');
+      setIsLoggedIn(true);
+      return true;
     }
-  }, []);
-
-  const login = (email: string, password: string, role: string) => {
-    // In a real app, this would validate credentials with a backend
-    setIsAuthenticated(true);
-    setUserRole(role);
-    setUserEmail(email);
     
-    // Store in localStorage
-    localStorage.setItem('userRole', role);
-    localStorage.setItem('userEmail', email);
-    
-    navigate('/dashboard');
+    return false;
   };
-
+  
   const logout = () => {
-    setIsAuthenticated(false);
+    setIsLoggedIn(false);
     setUserRole(null);
-    setUserEmail(null);
-    setUserName(null);
-    
-    // Clear localStorage
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
-    
-    navigate('/');
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
   };
-
+  
   const isAdmin = () => userRole === 'admin';
-  const isTeacher = () => userRole === 'teacher';
+  const isTeacher = () => userRole === 'teacher' || userRole === 'admin';
   const isStudent = () => userRole === 'student';
 
   return (
-    <AuthContext.Provider 
-      value={{ 
-        isAuthenticated, 
-        userRole, 
-        userEmail,
-        userName,
-        login, 
-        logout,
-        isAdmin,
-        isTeacher,
-        isStudent
-      }}
-    >
+    <AuthContext.Provider value={{ 
+      isLoggedIn, 
+      userRole, 
+      login, 
+      logout,
+      isAdmin,
+      isTeacher,
+      isStudent
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-// Create a higher-order component for role-based access control
-export const withRoleAccess = (allowedRoles: string[]) => 
-  <P extends object>(Component: React.ComponentType<P>) => {
-    return (props: P) => {
-      const { isAuthenticated, userRole } = useAuth();
-      
-      if (!isAuthenticated) {
-        return <div>Please log in to access this page.</div>;
-      }
-      
-      if (!userRole || !allowedRoles.includes(userRole)) {
-        return <div>You don't have permission to access this page.</div>;
-      }
-      
-      return <Component {...props} />;
-    };
-  };
+export default AuthContext;

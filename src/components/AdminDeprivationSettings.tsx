@@ -139,41 +139,55 @@ const AdminDeprivationSettings: React.FC = () => {
                 </div>
               </div>
               <p className="text-xs text-foreground/70">
-                Send warnings when a student reaches this percentage of the maximum absence limit
+                Notifications will be sent when a student reaches this percentage of absences
               </p>
             </div>
           </div>
         </GlassCard>
         
         <GlassCard>
-          <h3 className="font-medium mb-4">Course Override Settings</h3>
+          <h3 className="font-medium mb-4">Institutional Settings</h3>
           
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="defaultRule">Default Rule Application</Label>
-              <Select defaultValue="all">
-                <SelectTrigger id="defaultRule">
-                  <SelectValue />
+              <Label htmlFor="academicYear">Academic Year Format</Label>
+              <Select defaultValue="fall-spring">
+                <SelectTrigger id="academicYear">
+                  <SelectValue placeholder="Select format" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Apply to all courses</SelectItem>
-                  <SelectItem value="department">Apply by department</SelectItem>
-                  <SelectItem value="individual">Set individually for each course</SelectItem>
+                  <SelectItem value="fall-spring">Fall-Spring (Sep-Jun)</SelectItem>
+                  <SelectItem value="calendar">Calendar Year (Jan-Dec)</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="deprivationApproval">Deprivation Approval Process</Label>
+              <Select defaultValue="teacher-confirm">
+                <SelectTrigger id="deprivationApproval">
+                  <SelectValue placeholder="Select process" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="auto">Automatic</SelectItem>
+                  <SelectItem value="teacher-confirm">Teacher Confirmation</SelectItem>
+                  <SelectItem value="admin-confirm">Admin Confirmation</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-foreground/70">
-                Define how deprivation rules are applied across different courses
+                Who needs to approve a student's deprivation status
               </p>
             </div>
           </div>
+          
+          <div className="mt-6 flex justify-end">
+            <Button onClick={handleSaveSettings}>
+              <Save className="w-4 h-4 mr-2" />
+              Save Settings
+            </Button>
+          </div>
         </GlassCard>
-        
-        <div className="flex justify-end">
-          <Button onClick={handleSaveSettings}>
-            <Save className="w-4 h-4 mr-2" />
-            Save Settings
-          </Button>
-        </div>
       </div>
     </div>
   );

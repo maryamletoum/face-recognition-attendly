@@ -149,6 +149,9 @@ const CourseDetails: React.FC = () => {
       const foundCourse = courses.find(c => c.id === courseId);
       setCourse(foundCourse);
       setLoading(false);
+      
+      console.log('Course ID:', courseId);
+      console.log('Found Course:', foundCourse);
     }, 500);
   }, [courseId]);
 
@@ -170,6 +173,7 @@ const CourseDetails: React.FC = () => {
   };
 
   const getStatusPercentage = (status: string) => {
+    console.log('Status input:', status);
     switch (status.toLowerCase()) {
       case 'present':
         return "100%";
@@ -183,6 +187,7 @@ const CourseDetails: React.FC = () => {
   };
   
   const getStatusColorClass = (status: string) => {
+    console.log('Color Status input:', status);
     switch (status.toLowerCase()) {
       case 'present':
         return 'bg-green-500/10 text-green-500 border-green-200';

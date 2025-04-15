@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CalendarIcon, Clock, MapPin, Users, FileText, Eye, AlertTriangle } from 'lucide-react';
@@ -88,7 +87,6 @@ const courses = [
   }
 ];
 
-// Sample data for the student attendance history
 const sampleAttendanceHistory = [
   {
     date: new Date(2023, 8, 5),
@@ -122,7 +120,6 @@ const sampleAttendanceHistory = [
   }
 ];
 
-// Sample course attendance data
 const sampleCourseAttendance = [
   {
     courseId: "1",
@@ -173,7 +170,7 @@ const CourseDetails: React.FC = () => {
   };
 
   const getStatusPercentage = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'present':
         return "100%";
       case 'absent':
@@ -186,7 +183,7 @@ const CourseDetails: React.FC = () => {
   };
   
   const getStatusColorClass = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'present':
         return 'bg-green-500/10 text-green-500 border-green-200';
       case 'absent':

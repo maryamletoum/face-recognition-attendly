@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -60,8 +59,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState(selectedCourseId ? "course" : "all");
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  
+
   const getStatusClass = (status: string, excused?: boolean) => {
     if (excused) {
       return 'bg-blue-500/10 text-blue-500 border-blue-200';
@@ -86,29 +84,21 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
     excused: attendanceRecords.filter(r => r.excused).length,
   };
 
-  // Filter records for the selected course if we're on the course tab
   const filteredRecords = attendanceRecords.filter(record => {
-    // Course filter
     const courseMatch = activeTab === "course" && selectedCourseId 
       ? record.courseId === selectedCourseId
       : true;
       
-    // Search filter
     const searchMatch = searchQuery 
       ? (record.courseName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
          record.excuseType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
          record.notes?.toLowerCase().includes(searchQuery.toLowerCase()))
       : true;
       
-    // Date filter
-    const dateMatch = selectedDate
-      ? record.date.toDateString() === selectedDate.toDateString()
-      : true;
-      
-    return courseMatch && searchMatch && dateMatch;
+    return courseMatch && searchMatch;
   });
-  
-  // Separate absent records into with and without excuse
+
   const absentRecords = {
     withExcuse: filteredRecords.filter(r => r.status === 'absent' && r.excused),
     withoutExcuse: filteredRecords.filter(r => r.status === 'absent' && !r.excused)
@@ -118,7 +108,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Attendance History</DialogTitle>
+          <DialogTitle>Student Attendance History</DialogTitle>
         </DialogHeader>
         
         <div className="py-4">
@@ -143,7 +133,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
           <div className="mb-4 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-4 h-4" />
             <Input
-              placeholder="Search by course, excuse type, or notes..."
+              placeholder="Search by student name, course, excuse type, or notes..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

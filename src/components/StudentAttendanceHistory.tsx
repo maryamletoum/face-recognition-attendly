@@ -177,7 +177,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Student</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Status</TableHead>
@@ -189,17 +188,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                       .filter(r => r.status === 'present' || r.status === 'late')
                       .map((record, index) => (
                         <TableRow key={index}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                {studentName.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="font-medium">{studentName}</div>
-                                <div className="text-xs text-foreground/70">{studentId}</div>
-                              </div>
-                            </div>
-                          </TableCell>
                           <TableCell>
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -231,7 +219,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Student</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Excuse Type</TableHead>
@@ -242,17 +229,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                     {absentRecords.withExcuse.length > 0 ? (
                       absentRecords.withExcuse.map((record, index) => (
                         <TableRow key={index}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                {studentName.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="font-medium">{studentName}</div>
-                                <div className="text-xs text-foreground/70">{studentId}</div>
-                              </div>
-                            </div>
-                          </TableCell>
                           <TableCell>
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -278,7 +254,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4 text-foreground/70">
+                        <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
                           No excused absences found
                         </TableCell>
                       </TableRow>
@@ -292,7 +268,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Student</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Course</TableHead>
                       <TableHead>Status</TableHead>
@@ -303,17 +278,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                     {absentRecords.withoutExcuse.length > 0 ? (
                       absentRecords.withoutExcuse.map((record, index) => (
                         <TableRow key={index}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                {studentName.charAt(0)}
-                              </div>
-                              <div>
-                                <div className="font-medium">{studentName}</div>
-                                <div className="text-xs text-foreground/70">{studentId}</div>
-                              </div>
-                            </div>
-                          </TableCell>
                           <TableCell>
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -338,7 +302,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4 text-foreground/70">
+                        <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
                           No unexcused absences found
                         </TableCell>
                       </TableRow>
@@ -388,7 +352,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Student</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Notes</TableHead>
@@ -399,17 +362,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                           .filter(r => r.status === 'present' || r.status === 'late')
                           .map((record, index) => (
                             <TableRow key={index}>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                    {studentName.charAt(0)}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{studentName}</div>
-                                    <div className="text-xs text-foreground/70">{studentId}</div>
-                                  </div>
-                                </div>
-                              </TableCell>
                               <TableCell>
                                 <div className="flex items-center">
                                   <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -435,7 +387,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Student</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Excuse Type</TableHead>
                           <TableHead>Notes</TableHead>
@@ -445,17 +396,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                         {absentRecords.withExcuse.length > 0 ? (
                           absentRecords.withExcuse.map((record, index) => (
                             <TableRow key={index}>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                    {studentName.charAt(0)}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{studentName}</div>
-                                    <div className="text-xs text-foreground/70">{studentId}</div>
-                                  </div>
-                                </div>
-                              </TableCell>
                               <TableCell>
                                 <div className="flex items-center">
                                   <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -475,7 +415,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
+                            <TableCell colSpan={3} className="text-center py-4 text-foreground/70">
                               No excused absences found
                             </TableCell>
                           </TableRow>
@@ -489,7 +429,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Student</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead>Status</TableHead>
                           <TableHead>Notes</TableHead>
@@ -499,17 +438,6 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                         {absentRecords.withoutExcuse.length > 0 ? (
                           absentRecords.withoutExcuse.map((record, index) => (
                             <TableRow key={index}>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                                    {studentName.charAt(0)}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium">{studentName}</div>
-                                    <div className="text-xs text-foreground/70">{studentId}</div>
-                                  </div>
-                                </div>
-                              </TableCell>
                               <TableCell>
                                 <div className="flex items-center">
                                   <Calendar className="w-4 h-4 mr-2 text-primary" />
@@ -528,7 +456,7 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
+                            <TableCell colSpan={3} className="text-center py-4 text-foreground/70">
                               No unexcused absences found
                             </TableCell>
                           </TableRow>

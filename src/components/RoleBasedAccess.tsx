@@ -13,9 +13,9 @@ const RoleBasedAccess: React.FC<RoleBasedAccessProps> = ({
   fallback = null,
   children 
 }) => {
-  const { isLoggedIn, userRole } = useAuth();
+  const { isAuthenticated, userRole } = useAuth();
   
-  if (!isLoggedIn || !userRole) {
+  if (!isAuthenticated || !userRole) {
     return <>{fallback}</>;
   }
   

@@ -4,8 +4,17 @@ import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import GlassCard from './ui/GlassCard';
-import { Calendar, Clock, FileText, Book, History } from 'lucide-react';
+import { Calendar, Clock, FileText, Book, History, Search } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 type AttendanceRecord = {
   date: Date;
@@ -50,6 +59,8 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
   selectedCourseId
 }) => {
   const [activeTab, setActiveTab] = useState(selectedCourseId ? "course" : "all");
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   
   const getStatusClass = (status: string, excused?: boolean) => {
     if (excused) {
@@ -76,9 +87,32 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
   };
 
   // Filter records for the selected course if we're on the course tab
-  const filteredRecords = activeTab === "course" && selectedCourseId
-    ? attendanceRecords.filter(record => record.courseId === selectedCourseId)
-    : attendanceRecords;
+  const filteredRecords = attendanceRecords.filter(record => {
+    // Course filter
+    const courseMatch = activeTab === "course" && selectedCourseId 
+      ? record.courseId === selectedCourseId
+      : true;
+      
+    // Search filter
+    const searchMatch = searchQuery 
+      ? (record.courseName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         record.excuseType?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         record.notes?.toLowerCase().includes(searchQuery.toLowerCase()))
+      : true;
+      
+    // Date filter
+    const dateMatch = selectedDate
+      ? record.date.toDateString() === selectedDate.toDateString()
+      : true;
+      
+    return courseMatch && searchMatch && dateMatch;
+  });
+  
+  // Separate absent records into with and without excuse
+  const absentRecords = {
+    withExcuse: filteredRecords.filter(r => r.status === 'absent' && r.excused),
+    withoutExcuse: filteredRecords.filter(r => r.status === 'absent' && !r.excused)
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -106,7 +140,17 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
             </div>
           </div>
           
-          <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="mb-4 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-4 h-4" />
+            <Input
+              placeholder="Search by course, excuse type, or notes..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="all" className="flex items-center gap-2">
                 <History className="w-4 h-4" />
@@ -138,63 +182,143 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
                 </GlassCard>
               </div>
               
-              <div className="rounded-lg overflow-hidden border border-border">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-secondary/20">
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Course</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Status</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Excuse</th>
-                      <th className="text-left py-3 px-4 font-medium text-foreground/70">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {attendanceRecords.length > 0 ? (
-                      attendanceRecords.map((record, index) => (
-                        <tr key={index} className="border-t border-border/20">
-                          <td className="py-3 px-4">
+              <div>
+                <h4 className="font-medium mb-2">Present & Late Records</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredRecords
+                      .filter(r => r.status === 'present' || r.status === 'late')
+                      .map((record, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-2 text-primary" />
                               {format(record.date, "MMM d, yyyy")}
                             </div>
-                          </td>
-                          <td className="py-3 px-4">
+                          </TableCell>
+                          <TableCell>
                             <div className="flex items-center">
                               <Book className="w-4 h-4 mr-2 text-primary" />
                               {record.courseName || "Unknown Course"}
                             </div>
-                          </td>
-                          <td className="py-3 px-4">
+                          </TableCell>
+                          <TableCell>
                             <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusClass(record.status, record.excused)}`}>
                               {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                              {record.excused && " (Excused)"}
                             </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            {record.excused && record.excuseType ? (
-                              <div className="flex items-center">
-                                <FileText className="w-4 h-4 mr-2 text-blue-500" />
-                                <span className="capitalize">{record.excuseType}</span>
-                              </div>
-                            ) : (
-                              <span className="text-foreground/50">-</span>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
+                          </TableCell>
+                          <TableCell>
                             {record.notes || <span className="text-foreground/50">-</span>}
-                          </td>
-                        </tr>
+                          </TableCell>
+                        </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="font-medium mb-2">Absences with Excuse</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Excuse Type</TableHead>
+                      <TableHead>Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {absentRecords.withExcuse.length > 0 ? (
+                      absentRecords.withExcuse.map((record, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-2 text-primary" />
+                              {format(record.date, "MMM d, yyyy")}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Book className="w-4 h-4 mr-2 text-primary" />
+                              {record.courseName || "Unknown Course"}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                              <span className="capitalize">{record.excuseType}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {record.notes || <span className="text-foreground/50">-</span>}
+                          </TableCell>
+                        </TableRow>
                       ))
                     ) : (
-                      <tr>
-                        <td colSpan={5} className="text-center py-4 text-foreground/70">
-                          No attendance records found
-                        </td>
-                      </tr>
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
+                          No excused absences found
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="font-medium mb-2">Absences without Excuse</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {absentRecords.withoutExcuse.length > 0 ? (
+                      absentRecords.withoutExcuse.map((record, index) => (
+                        <TableRow key={index}>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-2 text-primary" />
+                              {format(record.date, "MMM d, yyyy")}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Book className="w-4 h-4 mr-2 text-primary" />
+                              {record.courseName || "Unknown Course"}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-500/10 text-red-500 border-red-200">
+                              Absent
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {record.notes || <span className="text-foreground/50">-</span>}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center py-4 text-foreground/70">
+                          No unexcused absences found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </TabsContent>
             
@@ -232,56 +356,123 @@ const StudentAttendanceHistory: React.FC<StudentAttendanceHistoryProps> = ({
               {selectedCourseId && (
                 <div className="mt-6">
                   <h3 className="font-medium mb-3">Course-Specific Records</h3>
-                  <div className="rounded-lg overflow-hidden border border-border">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-secondary/20">
-                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
-                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Status</th>
-                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Excuse</th>
-                          <th className="text-left py-3 px-4 font-medium text-foreground/70">Notes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredRecords.length > 0 ? (
-                          filteredRecords.map((record, index) => (
-                            <tr key={index} className="border-t border-border/20">
-                              <td className="py-3 px-4">
+                  
+                  <div className="mt-4">
+                    <h4 className="font-medium mb-2">Present & Late Records</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredRecords
+                          .filter(r => r.status === 'present' || r.status === 'late')
+                          .map((record, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
                                 <div className="flex items-center">
                                   <Calendar className="w-4 h-4 mr-2 text-primary" />
                                   {format(record.date, "MMM d, yyyy")}
                                 </div>
-                              </td>
-                              <td className="py-3 px-4">
+                              </TableCell>
+                              <TableCell>
                                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusClass(record.status, record.excused)}`}>
                                   {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                                  {record.excused && " (Excused)"}
                                 </div>
-                              </td>
-                              <td className="py-3 px-4">
-                                {record.excused && record.excuseType ? (
-                                  <div className="flex items-center">
-                                    <FileText className="w-4 h-4 mr-2 text-blue-500" />
-                                    <span className="capitalize">{record.excuseType}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-foreground/50">-</span>
-                                )}
-                              </td>
-                              <td className="py-3 px-4">
+                              </TableCell>
+                              <TableCell>
                                 {record.notes || <span className="text-foreground/50">-</span>}
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-2">Absences with Excuse</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Excuse Type</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {absentRecords.withExcuse.length > 0 ? (
+                          absentRecords.withExcuse.map((record, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <Calendar className="w-4 h-4 mr-2 text-primary" />
+                                  {format(record.date, "MMM d, yyyy")}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <FileText className="w-4 h-4 mr-2 text-blue-500" />
+                                  <span className="capitalize">{record.excuseType}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {record.notes || <span className="text-foreground/50">-</span>}
+                              </TableCell>
+                            </TableRow>
                           ))
                         ) : (
-                          <tr>
-                            <td colSpan={4} className="text-center py-4 text-foreground/70">
-                              No course-specific records found
-                            </td>
-                          </tr>
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center py-4 text-foreground/70">
+                              No excused absences found
+                            </TableCell>
+                          </TableRow>
                         )}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
+                  </div>
+                  
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-2">Absences without Excuse</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {absentRecords.withoutExcuse.length > 0 ? (
+                          absentRecords.withoutExcuse.map((record, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <Calendar className="w-4 h-4 mr-2 text-primary" />
+                                  {format(record.date, "MMM d, yyyy")}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-red-500/10 text-red-500 border-red-200">
+                                  Absent
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {record.notes || <span className="text-foreground/50">-</span>}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={3} className="text-center py-4 text-foreground/70">
+                              No unexcused absences found
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               )}

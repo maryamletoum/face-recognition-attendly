@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Table,
@@ -45,6 +44,7 @@ type AttendanceTableProps = {
   date: Date;
   courseId: string;
   isSessionActive?: boolean;
+  onAddExcuse?: (studentId: string, studentName: string) => void;
 };
 
 const AttendanceTable: React.FC<AttendanceTableProps> = ({
@@ -52,6 +52,7 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   date,
   courseId,
   isSessionActive = false,
+  onAddExcuse
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<'all' | 'present' | 'absent' | 'late' | 'excused'>('all');
@@ -149,12 +150,10 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   ]);
 
   const filteredStudents = students.filter(student => {
-    // Text search filter
     const textMatch = 
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchQuery.toLowerCase());
     
-    // Status filter
     let statusMatch = true;
     if (statusFilter !== 'all') {
       if (statusFilter === 'excused') {
@@ -218,7 +217,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
       )
     );
     
-    // If marked as absent, send notification email (simulated)
     if (status === 'absent') {
       const student = students.find(s => s.id === studentId);
       if (student) {
@@ -236,10 +234,14 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   };
 
   const openExcuseForm = (student: Student) => {
-    setCurrentStudent(student);
-    setExcuseType(student.excuseType || '');
-    setExcuseNote(student.notes || '');
-    setShowExcuseDialog(true);
+    if (onAddExcuse) {
+      onAddExcuse(student.id, student.name);
+    } else {
+      setCurrentStudent(student);
+      setExcuseType(student.excuseType || '');
+      setExcuseNote(student.notes || '');
+      setShowExcuseDialog(true);
+    }
   };
 
   const submitExcuse = () => {
@@ -284,16 +286,12 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
   };
 
   const submitAttendance = () => {
-    // Check for deprivation threshold (example: 15%)
-    const deprivationThreshold = 15; // This would come from admin settings
-    
-    // Update deprivation status based on attendance rates
+    const deprivationThreshold = 15;
     setStudents(prevStudents => 
       prevStudents.map(student => {
         const isNowDeprived = student.attendanceRate < (100 - deprivationThreshold);
         const statusChanged = student.isDeprived !== isNowDeprived;
         
-        // If student is newly deprived, send notification
         if (isNowDeprived && statusChanged) {
           toast({
             title: "Deprivation Warning",
@@ -318,7 +316,6 @@ const AttendanceTable: React.FC<AttendanceTableProps> = ({
     const student = students.find(s => s.id === studentId);
     if (!student) return;
     
-    // In a real app this would open a modal with the student's attendance history
     toast({
       title: "Attendance History",
       description: `Viewing history for ${student.name}`,

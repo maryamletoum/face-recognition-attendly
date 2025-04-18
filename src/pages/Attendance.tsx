@@ -10,13 +10,17 @@ import { cn } from "@/lib/utils";
 import AttendanceTable from '@/components/AttendanceTable';
 import BackButton from '@/components/BackButton';
 import { exportToExcel } from '@/utils/excelExport';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import FaceRecognition from '@/components/FaceRecognition';
 import DeprivationSettings from '@/components/DeprivationSettings';
 import { useAuth } from '@/contexts/AuthContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import StudentAttendanceHistory from '@/components/StudentAttendanceHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AttendanceSearch from '@/components/AttendanceSearch';
+import AttendanceExcuseForm from '@/components/AttendanceExcuseForm';
+import DeprivationNotification from '@/components/DeprivationNotification';
+import AdminDeprivationSettings from '@/components/AdminDeprivationSettings';
 
 const classes = [
   {
@@ -150,16 +154,28 @@ const Attendance: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [isTakingAttendance, setIsTakingAttendance] = useState(false);
   const [showDeprivationSettings, setShowDeprivationSettings] = useState(false);
+  const [showAdminDeprivationSettings, setShowAdminDeprivationSettings] = useState(false);
   const [showStudentHistory, setShowStudentHistory] = useState(false);
+  const [showExcuseForm, setShowExcuseForm] = useState(false);
+  const [showDeprivationNotification, setShowDeprivationNotification] = useState(false);
   const [selectedStudentName, setSelectedStudentName] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [activeTab, setActiveTab] = useState("sessions");
   const [selectedCourseForHistory, setSelectedCourseForHistory] = useState<string | undefined>(undefined);
+  const [searchFilters, setSearchFilters] = useState({ studentName: '', date: undefined as Date | undefined });
+  const [selectedStudentForExcuse, setSelectedStudentForExcuse] = useState({ name: '', id: '', date: new Date() });
+  const [deprivationStudent, setDeprivationStudent] = useState({
+    id: '',
+    name: '',
+    absenceRate: 0,
+    courseId: '',
+    courseName: ''
+  });
   
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
-  const { userRole, isStudent } = useAuth();
+  const { userRole, isStudent, isAdmin, isTeacher } = useAuth();
   
   useEffect(() => {
     if (isStudent() && location.search.includes('action=take')) {
@@ -175,6 +191,7 @@ const Attendance: React.FC = () => {
     const queryParams = new URLSearchParams(location.search);
     const courseId = queryParams.get('course');
     const action = queryParams.get('action');
+    const settings = queryParams.get('settings');
     
     if (courseId) {
       setSelectedClass(courseId);
@@ -183,7 +200,11 @@ const Attendance: React.FC = () => {
         setIsTakingAttendance(true);
       }
     }
-  }, [location.search, navigate, isStudent, toast]);
+    
+    if (settings === 'true' && isAdmin()) {
+      setShowAdminDeprivationSettings(true);
+    }
+  }, [location.search, navigate, isStudent, toast, isAdmin]);
 
   const handleExportSessions = () => {
     if (!selectedClass) return;
@@ -240,6 +261,42 @@ const Attendance: React.FC = () => {
     setSelectedCourseForHistory(courseId);
     setShowStudentHistory(true);
   };
+  
+  const handleOpenExcuseForm = (studentId: string, studentName: string) => {
+    setSelectedStudentForExcuse({
+      id: studentId,
+      name: studentName,
+      date: new Date()
+    });
+    setShowExcuseForm(true);
+  };
+  
+  const handleSubmitExcuse = (data: { excuseType: string; notes: string }) => {
+    toast({
+      title: "Excuse submitted",
+      description: `Excuse has been recorded for ${selectedStudentForExcuse.name}.`,
+    });
+    setShowExcuseForm(false);
+  };
+  
+  const handleSearch = (params: { studentName: string; date: Date | undefined }) => {
+    setSearchFilters(params);
+    toast({
+      title: "Search applied",
+      description: `Showing results for ${params.studentName || 'all students'}${params.date ? ' on ' + format(params.date, "MMMM d, yyyy") : ''}.`,
+    });
+  };
+  
+  const handleShowDeprivationNotification = () => {
+    setDeprivationStudent({
+      id: 'ST003',
+      name: 'James Wilson',
+      absenceRate: 18,
+      courseId: selectedClass || '1',
+      courseName: selectedClass ? classes.find(c => c.id === selectedClass)?.name || '' : 'Web Development'
+    });
+    setShowDeprivationNotification(true);
+  };
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background to-secondary/20">
@@ -278,7 +335,17 @@ const Attendance: React.FC = () => {
               </div>
             )}
             <BackButton className="shadow-sm hover:shadow-md transition-shadow" />
-            {userRole === 'admin' && !isTakingAttendance && (
+            {isAdmin() && !isTakingAttendance && (
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAdminDeprivationSettings(true)}
+                className="shadow-sm hover:shadow-md transition-shadow"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            )}
+            {isTeacher() && !isAdmin() && !isTakingAttendance && (
               <Button 
                 variant="outline" 
                 onClick={() => setShowDeprivationSettings(true)}
@@ -318,6 +385,10 @@ const Attendance: React.FC = () => {
           )}
         </div>
 
+        {!isTakingAttendance && selectedClass && !selectedSession && (
+          <AttendanceSearch onSearch={handleSearch} />
+        )}
+
         {isTakingAttendance && !isStudent() && (
           <FadeIn>
             <GlassCard className="mb-6">
@@ -328,9 +399,17 @@ const Attendance: React.FC = () => {
                     {format(new Date(), "EEEE, MMMM d • h:mm a")} | {classes.find(c => c.id === selectedClass)?.name}
                   </p>
                 </div>
-                <Button onClick={handleFinishAttendance} variant="outline">
-                  End Session
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={handleShowDeprivationNotification}
+                  >
+                    View Deprivations
+                  </Button>
+                  <Button onClick={handleFinishAttendance} variant="outline">
+                    End Session
+                  </Button>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -356,6 +435,7 @@ const Attendance: React.FC = () => {
                 date={new Date()}
                 courseId={selectedClass || ""}
                 isSessionActive={true}
+                onAddExcuse={handleOpenExcuseForm}
               />
               
               <div className="mt-6 text-sm text-foreground/70 border-t border-border/30 pt-4 flex justify-between items-center">
@@ -474,93 +554,93 @@ const Attendance: React.FC = () => {
                     <TabsTrigger value="sessions">Sessions</TabsTrigger>
                     <TabsTrigger value="students">Students</TabsTrigger>
                   </TabsList>
-                </Tabs>
-              </div>
-              
-              <TabsContent value="sessions" className="mt-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border/40">
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
-                        <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
-                        <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
-                        <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
-                          <td className="py-3 px-4">Session #{session.id}</td>
-                          <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
-                          <td className="py-3 px-4">{session.time}</td>
-                          <td className="py-3 px-4">
-                            <div className={cn(
-                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
-                              session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
-                              session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
-                              "bg-red-500/10 text-red-500 border-red-200"
-                            )}>
-                              {session.attendance}%
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-right">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => setSelectedSession(session.id)}
-                            >
-                              View Details
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="students" className="mt-0">
-                <div className="mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
-                    <input
-                      type="text"
-                      className="w-full pl-10 pr-4 py-2 rounded-lg border border-border glass"
-                      placeholder="Search students..."
-                    />
-                  </div>
-                </div>
-                <div className="grid gap-3">
-                  {[...Array(5)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
-                      onClick={() => handleViewStudentHistory(selectedClass || undefined)}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
-                          {String.fromCharCode(65 + i)}
-                        </div>
-                        <div>
-                          <p className="font-medium">Student {i + 1}</p>
-                          <p className="text-sm text-foreground/70">ID: ST00{i + 1}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className={cn(
-                          "font-medium",
-                          Math.random() > 0.3 ? "text-green-500" : "text-amber-500"
-                        )}>
-                          {Math.floor(85 + Math.random() * 15)}%
-                        </div>
-                        <p className="text-xs text-foreground/60">Attendance Rate</p>
+                
+                  <TabsContent value="sessions" className="mt-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b border-border/40">
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Session ID</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Date</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Time</th>
+                            <th className="text-left py-3 px-4 font-medium text-foreground/70">Attendance</th>
+                            <th className="text-right py-3 px-4 font-medium text-foreground/70">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {classes.find(c => c.id === selectedClass)?.sessions.map((session) => (
+                            <tr key={session.id} className="border-b border-border/20 hover:bg-secondary/30 transition-colors">
+                              <td className="py-3 px-4">Session #{session.id}</td>
+                              <td className="py-3 px-4">{format(session.date, "MMMM d, yyyy")}</td>
+                              <td className="py-3 px-4">{session.time}</td>
+                              <td className="py-3 px-4">
+                                <div className={cn(
+                                  "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border",
+                                  session.attendance >= 90 ? "bg-green-500/10 text-green-500 border-green-200" :
+                                  session.attendance >= 80 ? "bg-amber-500/10 text-amber-500 border-amber-200" :
+                                  "bg-red-500/10 text-red-500 border-red-200"
+                                )}>
+                                  {session.attendance}%
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => setSelectedSession(session.id)}
+                                >
+                                  View Details
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="students" className="mt-4">
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground/50 w-5 h-5" />
+                        <input
+                          type="text"
+                          className="w-full pl-10 pr-4 py-2 rounded-lg border border-border glass"
+                          placeholder="Search students..."
+                        />
                       </div>
                     </div>
-                  ))}
-                </div>
-              </TabsContent>
+                    <div className="grid gap-3">
+                      {[...Array(5)].map((_, i) => (
+                        <div 
+                          key={i} 
+                          className="flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/20 cursor-pointer"
+                          onClick={() => handleViewStudentHistory(selectedClass || undefined)}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-medium">
+                              {String.fromCharCode(65 + i)}
+                            </div>
+                            <div>
+                              <p className="font-medium">Student {i + 1}</p>
+                              <p className="text-sm text-foreground/70">ID: ST00{i + 1}</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className={cn(
+                              "font-medium",
+                              Math.random() > 0.3 ? "text-green-500" : "text-amber-500"
+                            )}>
+                              {Math.floor(85 + Math.random() * 15)}%
+                            </div>
+                            <p className="text-xs text-foreground/60">Attendance Rate</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
             </GlassCard>
           </FadeIn>
         ) : !isTakingAttendance && selectedSession ? (
@@ -600,6 +680,7 @@ const Attendance: React.FC = () => {
                 date={classes.find(c => c.id === selectedClass)?.sessions.find(s => s.id === selectedSession)?.date || new Date()}
                 courseId={selectedClass || ""}
                 isSessionActive={false}
+                onAddExcuse={handleOpenExcuseForm}
               />
             </GlassCard>
           </FadeIn>
@@ -612,6 +693,15 @@ const Attendance: React.FC = () => {
             <DialogTitle>Attendance & Deprivation Settings</DialogTitle>
           </DialogHeader>
           <DeprivationSettings />
+        </DialogContent>
+      </Dialog>
+      
+      <Dialog open={showAdminDeprivationSettings} onOpenChange={setShowAdminDeprivationSettings}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle>Attendance & Deprivation Settings (Admin)</DialogTitle>
+          </DialogHeader>
+          <AdminDeprivationSettings />
         </DialogContent>
       </Dialog>
       
@@ -630,6 +720,27 @@ const Attendance: React.FC = () => {
         overallAttendance={87}
         courseAttendance={sampleCourseAttendance}
         selectedCourseId={selectedCourseForHistory}
+      />
+      
+      <Dialog open={showExcuseForm} onOpenChange={setShowExcuseForm}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Attendance Excuse</DialogTitle>
+          </DialogHeader>
+          <AttendanceExcuseForm
+            studentName={selectedStudentForExcuse.name}
+            studentId={selectedStudentForExcuse.id}
+            date={selectedStudentForExcuse.date}
+            onSubmit={handleSubmitExcuse}
+            onCancel={() => setShowExcuseForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+      
+      <DeprivationNotification 
+        isOpen={showDeprivationNotification}
+        onOpenChange={setShowDeprivationNotification}
+        student={deprivationStudent}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import GlassCard from '@/components/ui/GlassCard';
@@ -8,6 +9,10 @@ import RoleBasedAccess from '@/components/RoleBasedAccess';
 import { exportToExcel } from '@/utils/excelExport';
 import { useToast } from "@/components/ui/use-toast";
 import BackButton from '@/components/BackButton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const students = [
   {
@@ -78,6 +83,17 @@ const students = [
 
 const Students: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddStudentDialog, setShowAddStudentDialog] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    name: '',
+    email: '',
+    course: 'Web Development',
+    enrollmentDate: new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  });
   const { isAdmin } = useAuth();
   const { toast } = useToast();
   
@@ -101,6 +117,56 @@ const Students: React.FC = () => {
     toast({
       title: "Export successful",
       description: "Student data has been exported to Excel",
+    });
+  };
+
+  const handleAddStudent = () => {
+    setShowAddStudentDialog(true);
+  };
+
+  const handleSubmitNewStudent = () => {
+    // Validate form
+    if (!newStudent.name || !newStudent.email) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // In a real app, you would send this to your API
+    // For now, we'll just add it to our local array
+    const newId = (Math.max(...students.map(s => parseInt(s.id))) + 1).toString();
+    
+    const studentData = {
+      id: newId,
+      name: newStudent.name,
+      email: newStudent.email,
+      course: newStudent.course,
+      enrollmentDate: newStudent.enrollmentDate,
+      attendance: "0%" // New students start with 0% attendance
+    };
+    
+    // Add to our array
+    students.push(studentData);
+    
+    // Reset form and close dialog
+    setNewStudent({
+      name: '',
+      email: '',
+      course: 'Web Development',
+      enrollmentDate: new Date().toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      })
+    });
+    setShowAddStudentDialog(false);
+    
+    toast({
+      title: "Student added",
+      description: `${newStudent.name} has been added successfully`,
     });
   };
 
@@ -134,7 +200,7 @@ const Students: React.FC = () => {
                   <UserPlus className="w-4 h-4 mr-2" />
                   Import
                 </Button>
-                <Button>
+                <Button onClick={handleAddStudent}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Student
                 </Button>
@@ -218,6 +284,58 @@ const Students: React.FC = () => {
           </GlassCard>
         </FadeIn>
       </div>
+
+      {/* Add Student Dialog */}
+      <Dialog open={showAddStudentDialog} onOpenChange={setShowAddStudentDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Student</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input 
+                id="name" 
+                value={newStudent.name} 
+                onChange={(e) => setNewStudent({...newStudent, name: e.target.value})}
+                placeholder="Enter student name"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input 
+                id="email" 
+                type="email"
+                value={newStudent.email} 
+                onChange={(e) => setNewStudent({...newStudent, email: e.target.value})}
+                placeholder="Enter student email"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="course">Course</Label>
+              <Select 
+                value={newStudent.course}
+                onValueChange={(value) => setNewStudent({...newStudent, course: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select course" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Web Development">Web Development</SelectItem>
+                  <SelectItem value="Data Structures">Data Structures</SelectItem>
+                  <SelectItem value="Mobile App Development">Mobile App Development</SelectItem>
+                  <SelectItem value="Database Systems">Database Systems</SelectItem>
+                  <SelectItem value="AI Fundamentals">AI Fundamentals</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddStudentDialog(false)}>Cancel</Button>
+            <Button onClick={handleSubmitNewStudent}>Add Student</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
